@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kash Watch Vault | Engineering & Horology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #fbbf24; --bg: #050505; --lume: #00ffff; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; color: #e2e8f0; overflow-x: hidden; margin: 0; transition: background 0.5s ease; }
+        .lux-font { font-family: 'Playfair Display', serif; }
+        .mono-font { font-family: 'Space Grotesk', sans-serif; }
+        
+        #gear-system { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.05; pointer-events: none; }
+        .gear-path { fill: none; stroke: white; stroke-width: 0.8; }
+        
+        /* ADJUSTED LUME MODE - Fixing the "Invisible" Brightness */
+        body.lume-mode { background: #000; color: var(--lume); }
+        body.lume-mode #gear-system { opacity: 0.1; filter: drop-shadow(0 0 5px var(--lume)); }
+        body.lume-mode .glass-card { background: rgba(0, 255, 255, 0.01); border-color: rgba(0, 255, 255, 0.1); }
+        
+        /* Watch Image Lume Logic: Darker base, cyan glow instead of pure white brightness */
+        body.lume-mode .watch-img { 
+            filter: brightness(0.7) sepia(1) hue-rotate(140deg) saturate(3) drop-shadow(0 0 10px var(--lume));
+            mix-blend-mode: screen;
+        }
+        
+        body.lume-mode .accent-gold, body.lume-mode .text-yellow-500 { 
+            color: var(--lume) !important; 
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.5); 
+        }
+
+        /* UV Torch Effect */
+        #uv-torch { 
+            position: fixed; top: 0; left: 0; width: 350px; height: 350px; 
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.08) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%);
+        }
+        body.lume-mode #uv-torch { display: block; }
+
+        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); transform-style: preserve-3d; }
+        .category-tag { font-size: 9px; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .tag-integrated-sports { color: #22d3ee; border-color: #22d3ee44; }
+        .tag-dress { color: #a78bfa; border-color: #a78bfa44; }
+        .tag-rugged { color: #f87171; border-color: #f8717144; }
+        .tag-digital-classic { color: #fbbf24; border-color: #fbbf2444; }
+
+        .img-container { height: 260px; display: flex; align-items: center; justify-content: center; perspective: 1000px; cursor: pointer; }
+        .watch-img { transition: transform 0.1s ease-out; max-height: 90%; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
+
+        #moon-disk { transition: transform 2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .beat-bar { width: 2px; height: 10px; background: var(--gold); transform-origin: bottom; transition: 0.2s; }
+
+        .stat-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+        .stat-progress { height: 100%; background: var(--gold); width: 0%; transition: width 1s ease; }
+
+        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; opacity: 0; backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="pb-20">
+
+    <div id="uv-torch"></div>
+
+    <svg id="gear-system" viewBox="0 0 100 100">
+        <g id="gear-main" transform="translate(50, 50)"><circle class="gear-path" r="15" stroke-dasharray="2,2"/></g>
+        <g id="gear-balance" transform="translate(80, 80)"><circle class="gear-path" r="10" /><line class="gear-path" x1="-10" y1="0" x2="10" y2="0" /></g>
+    </svg>
+
+    <nav class="sticky top-0 z-50 px-10 py-6 bg-black/80 backdrop-blur-xl border-b border-white/10 flex flex-col lg:flex-row justify-between items-center gap-8">
+        <div class="flex flex-col">
+            <h1 class="lux-font text-4xl tracking-tighter text-yellow-500 leading-none">KASH</h1>
+            <span class="text-[10px] uppercase tracking-[0.5em] text-white/40 mt-1 font-bold">Horological Vault</span>
+        </div>
+        <div class="flex flex-col md:flex-row items-center gap-4">
+            <button class="bg-white/5 border border-white/10 text-[9px] tracking-[3px] py-2 px-6 rounded hover:border-yellow-500 transition" onclick="toggleLume()">LUME MODE</button>
+            <input type="text" id="searchInput" placeholder="SEARCH VAULT..." class="bg-white/5 border border-white/10 px-6 py-2 rounded text-xs w-64 mono-font outline-none focus:border-yellow-500" oninput="handleSearch()">
+            <div class="flex gap-2 text-[10px] mono-font">
+                <button class="px-3 py-2 rounded border border-white/10 hover:border-yellow-500" onclick="filterWatches('All')">ALL</button>
+                <button class="px-3 py-2 rounded border border-white/10 hover:border-yellow-500" onclick="filterWatches('Automatic')">AUTO</button>
+                <button class="px-3 py-2 rounded border border-white/10 hover:border-yellow-500" onclick="filterWatches('Quartz')">QTZ</button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-7xl mx-auto px-6 pt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white/[0.02] border-l-4 border-yellow-500 p-6 rounded-r-2xl glass-card">
+            <p class="text-[10px] uppercase opacity-40 tracking-widest mb-1 font-bold">Vault Valuation</p>
+            <h3 class="text-3xl font-bold mono-font text-yellow-500" id="val-counter">0 LKR</h3>
+        </div>
+
+        <div class="bg-white/[0.02] border-l-4 border-white/20 p-6 rounded-r-2xl glass-card flex items-center gap-4">
+            <div class="relative w-12 h-12 bg-[#0a0a1a] rounded-full overflow-hidden border border-white/10">
+                <div id="moon-disk" class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-8 h-8 bg-yellow-100 rounded-full shadow-[0_0_15px_rgba(251,191,36,0.4)]"></div>
+                </div>
+                <div id="moon-mask" class="absolute inset-0 bg-[#0a0a1a] translate-x-0 transition-transform duration-1000"></div>
+            </div>
+            <div>
+                <p class="text-[10px] uppercase opacity-40 font-bold">Moon Phase</p>
+                <p id="moon-label" class="text-xs mono-font">Waning Gibbous</p>
+            </div>
+        </div>
+
+        <div class="bg-white/[0.02] border-l-4 border-white/20 p-6 rounded-r-2xl glass-card">
+            <p class="text-[10px] uppercase opacity-40 font-bold mb-3">Mechanical Heartbeat</p>
+            <div class="flex items-end gap-1 h-8" id="beat-visualizer"></div>
+        </div>
+
+        <div class="bg-white/[0.02] border-l-4 border-white/20 p-6 rounded-r-2xl glass-card">
+            <div class="flex justify-between items-center mb-1">
+                <p class="text-[10px] uppercase opacity-40 font-bold">Swiss Ratio</p>
+                <span id="swiss-perc" class="text-[10px] mono-font">0%</span>
+            </div>
+            <div class="stat-bar"><div id="swiss-bar" class="stat-progress"></div></div>
+            <p class="text-[9px] opacity-30 mt-2 uppercase tracking-tighter" id="asset-count">0 UNITS</p>
+        </div>
+    </header>
+
+    <main id="watch-grid" class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"></main>
+
+    <div id="modal-overlay" onclick="closeModal()">
+        <div class="max-w-4xl mx-auto h-full flex items-center px-6">
+            <div class="glass-card w-full p-12 rounded-3xl grid grid-cols-1 md:grid-cols-2 gap-12" onclick="event.stopPropagation()">
+                <div id="modal-img-frame" class="flex items-center justify-center"></div>
+                <div>
+                    <h4 id="m-make" class="text-yellow-500 text-xs tracking-widest font-bold mb-2"></h4>
+                    <h2 id="m-model" class="lux-font text-4xl mb-6"></h2>
+                    <div class="grid grid-cols-2 gap-4 text-[10px] mono-font opacity-80 mb-8">
+                        <div><span class="opacity-40 block">CALIBER</span><p id="m-mov"></p></div>
+                        <div><span class="opacity-40 block">WATER RESIST</span><p id="m-wr"></p></div>
+                        <div><span class="opacity-40 block">CODE</span><p id="m-code"></p></div>
+                    </div>
+                    <p id="m-egg" class="text-xs italic bg-white/5 p-4 rounded-xl"></p>
+                    <button onclick="closeModal()" class="w-full py-3 mt-8 border border-white/10 text-[10px] tracking-widest hover:bg-white/5">BACK TO VAULT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const watches = [
+            { make: "Tissot", model: "PRX Powermatic 80", code: "T137.407.11.041.00", cat: "Integrated Sports", mov: "Automatic (Powermatic 80)", wr: "100m (10 Bar)", comp: "Date, 80hr Reserve", value: "255000", egg: "Nivachron™ Spring: Highly anti-magnetic.", img: "prxp.png", swiss: true },
+            { make: "Tissot", model: "PRX Quartz (Mint)", code: "T137.410.11.091.01", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m (10 Bar)", comp: "Date", value: "137000", egg: "Quick-Release: Swap bracelet for strap in seconds.", img: "prxm.png", swiss: true },
+            { make: "Tissot", model: "PRX Quartz (Blue)", code: "T137.410.11.041.00", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m (10 Bar)", comp: "Date", value: "137000", egg: "70s Heritage: Direct reissue of the 1978 original.", img: "prxb.png", swiss: true },
+            { make: "Tissot", model: "Carson Premium Moonphase", code: "T122.423.11.033.00", cat: "Dress", mov: "Quartz (ETA F05.841)", wr: "50m (5 Bar)", comp: "True Moonphase, Date", value: "165000", egg: "EOL Indicator: Seconds hand jumps 4s when low.", img: "carson.png", swiss: true },            
+            { make: "Tag Heuer", model: "Formula 1 Date", code: "WAZ1118.BA0875", cat: "Sports/Racing", mov: "Quartz", wr: "200m (20 Bar)", comp: "Date", value: "425000", egg: "Racing Extension: Clasp has a hidden fold-out.", img: "tag.png", swiss: true },
+            { make: "Seiko", model: "5 'Specialist'", code: "SRPD76", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m (10 Bar)", comp: "Day, Date, Hacking", value: "141000", egg: "Hacking Seconds: Stop time for exact sync.", img: "76.png", swiss: false },
+            { make: "Seiko", model: "5 'Arabic Dial'", code: "SNK063J5", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m (3 Bar)", comp: "Bilingual Day/Date", value: "85000", egg: "Secret Calendar: Arabic day wheel hidden.", img: "arabic.png", swiss: false },
+            { make: "G-Shock", model: "CasiOak", code: "GA2100", cat: "Rugged", mov: "Quartz (Digi-Ana)", wr: "100m (10 Bar)", comp: "World Time, 5 Alarms", value: "48000", egg: "Hand Shift: Move hands away from digital screen.", img: "casioak.png", swiss: false },
+            { make: "G-Shock", model: "Camo XL", code: "GA100CM-8A", cat: "Rugged", mov: "Quartz (Digi-Ana)", wr: "200m (20 Bar)", comp: "Speed Indicator", value: "52000", egg: "Mach Indicator: Center dial calculates speed.", img: "gshock.png", swiss: false },
+            { make: "Casio", model: "Vintage (Black/Gold)", code: "A168WEGB-1B", cat: "Digital Classic", mov: "Quartz", wr: "Splash Proof", comp: "Alarm, Stopwatch", value: "19500", egg: "Authenticity Check: Hold bottom-right for 'CASIo'.", img: "goldv.png", swiss: false },
+            { make: "Casio", model: "Vintage (Gunmetal)", code: "A168WGG-1B", cat: "Digital Classic", mov: "Quartz", wr: "Splash Proof", comp: "Alarm, Stopwatch", value: "18000", egg: "LCD Test: Hold all buttons to light segments.", img: "greyv.png", swiss: false },
+            { make: "Casio", model: "Edifice Chronograph", code: "EFV-500L-7AVUEF", cat: "Sports/Casual", mov: "Quartz", wr: "100m (10 Bar)", comp: "Chrono, 24hr Subdial, Date", value: "35000", egg: "24hr Sync: Prevents damage in 'danger zone'.", img: "edifice.png", swiss: false },
+            { make: "Fossil", model: "Goodwin Chronograph", code: "FS5415", cat: "Casual/Racing", mov: "Quartz", wr: "50m (5 Bar)", comp: "Flyback Chrono, Date", value: "28000", egg: "Tachymeter: Speed calculation on dial.", img: "goodwin.png", swiss: false },
+            { make: "Fossil", model: "Slimline Minimalist", code: "FS5305", cat: "Casual", mov: "Quartz", wr: "50m (5 Bar)", comp: "Three-Hand, Date", value: "22000", egg: "Ultra-Slim: Slide under dress shirt cuffs.", img: "slimline.png", swiss: false }
+        ];
+
+        // --- HOROLOGICAL ENGINE ---
+        gsap.to("#gear-main", { rotation: 360, duration: 40, repeat: -1, ease: "none" });
+        const balance = gsap.to("#gear-balance", { rotation: 35, duration: 0.15, repeat: -1, yoyo: true, ease: "sine.inOut" });
+
+        // Feature 1: Parallax Scroll
+        window.addEventListener('scroll', () => {
+            const scroll = window.pageYOffset;
+            gsap.to("#gear-main", { rotation: scroll * 0.15, overwrite: 'auto' });
+            gsap.to("#gear-balance", { y: scroll * 0.1, rotation: scroll * 0.2, overwrite: 'auto' });
+        });
+
+        // Feature 6: UV Torch Cursor
+        window.addEventListener('mousemove', (e) => {
+            if(document.body.classList.contains('lume-mode')) {
+                gsap.to("#uv-torch", { left: e.clientX, top: e.clientY, duration: 0.1 });
+            }
+        });
+
+        function updateMoonPhase() {
+            const date = new Date();
+            const lp = 2551443; 
+            const now = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 20, 35, 0);
+            const new_moon = new Date(1970, 0, 7, 20, 35, 0);
+            const phase = ((now.getTime() - new_moon.getTime()) / 1000) % lp;
+            const phasePct = phase / lp;
+            
+            const mask = document.getElementById('moon-mask');
+            const label = document.getElementById('moon-label');
+            const offset = (phasePct < 0.5) ? phasePct * 200 : (1 - phasePct) * 200;
+            mask.style.transform = `translateX(${offset}%)`;
+            
+            const phases = ["New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous", "Full Moon", "Waning Gibbous", "Last Quarter", "Waning Crescent"];
+            label.innerText = phases[Math.floor(phasePct * 8)];
+        }
+
+        function initBeatMonitor() {
+            const container = document.getElementById('beat-visualizer');
+            for(let i=0; i<15; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'beat-bar';
+                container.appendChild(bar);
+            }
+        }
+
+        function updateAnalytics(data) {
+            const total = data.reduce((acc, w) => acc + parseInt(w.value), 0);
+            const autoCount = data.filter(w => w.mov.includes('Automatic')).length;
+            const swissCount = data.filter(w => w.swiss).length;
+            const swissRatio = data.length > 0 ? Math.round((swissCount / data.length) * 100) : 0;
+            
+            gsap.to("#val-counter", { innerText: total, duration: 2, snap: { innerText: 1 }, modifiers: { innerText: (v) => parseInt(v).toLocaleString() + ' LKR' } });
+            document.getElementById('asset-count').innerText = `${data.length} UNITS`;
+            
+            // Feature 5: Swiss Dashboard Update
+            document.getElementById('swiss-perc').innerText = `${swissRatio}%`;
+            gsap.to("#swiss-bar", { width: `${swissRatio}%`, duration: 1.5, ease: "power2.out" });
+
+            const bars = document.querySelectorAll('.beat-bar');
+            bars.forEach((bar) => {
+                const duration = autoCount > 0 ? 0.2 + (Math.random() * 0.5) : 1;
+                gsap.to(bar, { scaleY: 1.5 + Math.random() * 3, duration: duration, repeat: -1, yoyo: true });
+            });
+            gsap.to(balance, { timeScale: autoCount > 0 ? 1 : 0.1, duration: 1 });
+        }
+
+        function toggleLume() {
+            document.body.classList.toggle('lume-mode');
+        }
+
+        function openModal(w) {
+            document.getElementById('m-make').innerText = w.make;
+            document.getElementById('m-model').innerText = w.model;
+            document.getElementById('m-mov').innerText = w.mov;
+            document.getElementById('m-wr').innerText = w.wr;
+            document.getElementById('m-code').innerText = w.code;
+            document.getElementById('m-egg').innerText = w.egg;
+            document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-80 drop-shadow-2xl" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'">`;
+            const modal = document.getElementById('modal-overlay');
+            modal.style.display = 'block';
+            gsap.to(modal, { opacity: 1, duration: 0.4 });
+        }
+
+        function closeModal() {
+            gsap.to("#modal-overlay", { opacity: 0, duration: 0.3, onComplete: () => document.getElementById('modal-overlay').style.display = 'none' });
+        }
+
+        function renderWatches(data) {
+            const grid = document.getElementById('watch-grid');
+            grid.innerHTML = '';
+            data.forEach((w) => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-3xl p-8 flex flex-col h-full opacity-0 translate-y-12 watch-card';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="category-tag tag-${w.cat.toLowerCase().replace('/', '-').replace(' ', '-')}">${w.cat}</span>
+                        <span class="text-[9px] mono-font opacity-40 px-2 py-1 rounded border border-white/5">${w.wr}</span>
+                    </div>
+                    <div class="img-container mb-8"><img src="${w.img}" class="watch-img" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'"></div>
+                    <h4 class="text-white/30 text-[10px] uppercase font-bold tracking-widest">${w.make}</h4>
+                    <h2 class="lux-font text-2xl mb-4">${w.model}</h2>
+                    <div class="mt-auto pt-6 border-t border-white/5 flex justify-between items-end">
+                        <div><span class="text-[8px] opacity-30 block">CALIBER</span><span class="text-[10px] ${w.mov.includes('Automatic') ? 'text-yellow-500' : ''}">${w.mov}</span></div>
+                        <div class="text-right text-yellow-500 mono-font font-bold">${parseInt(w.value).toLocaleString()}</div>
+                    </div>`;
+
+                // Feature 4: 3D Tilt Interaction
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const dx = e.clientX - (rect.left + rect.width/2);
+                    const dy = e.clientY - (rect.top + rect.height/2);
+                    gsap.to(card, { rotationY: dx/12, rotationX: -dy/12, transformPerspective: 1000, duration: 0.4 });
+                });
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, { rotationX: 0, rotationY: 0, duration: 0.6 });
+                });
+
+                card.querySelector('.img-container').onclick = () => openModal(w);
+                grid.appendChild(card);
+            });
+            updateAnalytics(data);
+            gsap.to(".watch-card", { opacity: 1, y: 0, duration: 0.8, stagger: 0.05 });
+        }
+
+        function handleSearch() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            renderWatches(watches.filter(w => w.model.toLowerCase().includes(q) || w.make.toLowerCase().includes(q)));
+        }
+
+        function filterWatches(f) {
+            renderWatches(f === 'All' ? watches : watches.filter(w => w.mov.includes(f)));
+        }
+
+        window.onload = () => {
+            initBeatMonitor();
+            updateMoonPhase();
+            renderWatches(watches);
+        };
+    </script>
+</body>
+</html>
