@@ -13,17 +13,14 @@
         .lux-font { font-family: 'Playfair Display', serif; }
         .mono-font { font-family: 'Space Grotesk', sans-serif; }
         
-        /* HOVER DYNAMICS */
         .magnetic-wrap { display: inline-block; transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1); }
         
-        /* THE BLUEPRINT BACKGROUND */
         #blueprint-bg { position: fixed; inset: 0; z-index: -1; opacity: 0.15; pointer-events: none; }
         .grid-line { stroke: rgba(255,255,255,0.1); stroke-width: 0.5; }
 
         #gear-system { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.08; pointer-events: none; }
         .gear-path { fill: none; stroke: white; stroke-width: 0.5; stroke-dasharray: 4 4; }
         
-        /* LUME MODE 2.0 */
         body.lume-mode { background: #000; color: var(--lume); }
         body.lume-mode .glass-card { background: rgba(0, 255, 255, 0.02); border-color: rgba(0, 255, 255, 0.2); box-shadow: 0 0 20px rgba(0,255,255,0.05); }
         body.lume-mode .watch-img { filter: brightness(0.8) drop-shadow(0 0 15px var(--lume)); mix-blend-mode: screen; }
@@ -36,7 +33,6 @@
         }
         body.lume-mode #uv-torch { display: block; }
 
-        /* PREMIUM GLASS */
         .glass-card { 
             background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%); 
             backdrop-filter: blur(30px); 
@@ -53,8 +49,12 @@
         .img-container { height: 280px; perspective: 1200px; cursor: crosshair; }
         .watch-img { transition: filter 0.5s ease; max-height: 95%; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.7)); }
 
-        .beat-bar { width: 3px; background: linear-gradient(to top, var(--gold), transparent); border-radius: 2px; }
+        .beat-bar { width: 3px; background: linear-gradient(to top, var(--gold), transparent); border-radius: 2px; height: 4px; }
         .stat-progress { background: linear-gradient(90deg, var(--gold), #f59e0b); }
+
+        /* PALETTE UI */
+        .swatch-pip { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+        .swatch-large { width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
 <body class="pb-20">
@@ -146,13 +146,19 @@
             <div id="modal-img-frame" class="flex items-center justify-center bg-white/[0.01] rounded-[2rem] p-8 border border-white/5 shadow-inner"></div>
             <div class="flex flex-col justify-center">
                 <span id="m-make" class="text-yellow-500 text-[10px] tracking-[0.4em] font-black mb-4 bg-yellow-500/10 px-4 py-1 rounded-full inline-block w-fit"></span>
-                <h2 id="m-model" class="lux-font text-5xl mb-8 leading-tight"></h2>
-                <div class="grid grid-cols-2 gap-8 mb-10">
+                <h2 id="m-model" class="lux-font text-5xl mb-6 leading-tight"></h2>
+                
+                <div class="mb-8 border-y border-white/5 py-6">
+                    <p class="text-[9px] opacity-40 font-bold mb-4 tracking-widest uppercase">Sartorial Pairing</p>
+                    <div id="m-palette-dots" class="flex gap-5"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-8 mb-8">
                     <div class="border-l border-white/10 pl-4"><span class="text-[9px] opacity-40 block mb-1 font-bold">CALIBER</span><p id="m-mov" class="text-sm mono-font"></p></div>
                     <div class="border-l border-white/10 pl-4"><span class="text-[9px] opacity-40 block mb-1 font-bold">DEPTH RATING</span><p id="m-wr" class="text-sm mono-font"></p></div>
                 </div>
                 <div class="bg-white/[0.03] p-6 rounded-2xl border border-white/5">
-                    <p class="text-[9px] opacity-40 font-bold mb-2 tracking-widest">TECHNICAL LOG</p>
+                    <p class="text-[9px] opacity-40 font-bold mb-2 tracking-widest uppercase">Technical Log</p>
                     <p id="m-egg" class="text-sm italic text-white/80 leading-relaxed"></p>
                 </div>
                 <button onclick="closeModal()" class="mt-10 py-4 rounded-xl border border-white/10 text-[10px] tracking-[0.3em] font-bold hover:bg-white hover:text-black transition-all">BACK TO VAULT</button>
@@ -161,36 +167,32 @@
     </div>
 
     <script>
-        // --- DATA REMAINS UNCHANGED ---
         const watches = [
-            { make: "Tissot", model: "PRX Powermatic 80", code: "T137.407.11.041.00", cat: "Integrated Sports", mov: "Automatic (Powermatic 80)", wr: "100m (10 Bar)", comp: "Date, 80hr Reserve", value: "255000", egg: "Nivachron™ Spring: Highly anti-magnetic.", img: "prxp.png", swiss: true },
-            { make: "Tissot", model: "PRX Quartz (Mint)", code: "T137.410.11.091.01", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m (10 Bar)", comp: "Date", value: "137000", egg: "Quick-Release: Swap bracelet for strap in seconds.", img: "prxm.png", swiss: true },
-            { make: "Tissot", model: "PRX Quartz (Blue)", code: "T137.410.11.041.00", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m (10 Bar)", comp: "Date", value: "137000", egg: "70s Heritage: Direct reissue of the 1978 original.", img: "prxb.png", swiss: true },
-            { make: "Tissot", model: "Carson Premium Moonphase", code: "T122.423.11.033.00", cat: "Dress", mov: "Quartz (ETA F05.841)", wr: "50m (5 Bar)", comp: "True Moonphase, Date", value: "165000", egg: "EOL Indicator: Seconds hand jumps 4s when low.", img: "carson.png", swiss: true },            
-            { make: "Tag Heuer", model: "Formula 1 Date", code: "WAZ1118.BA0875", cat: "Sports/Racing", mov: "Quartz", wr: "200m (20 Bar)", comp: "Date", value: "425000", egg: "Racing Extension: Clasp has a hidden fold-out.", img: "tag.png", swiss: true },
-            { make: "Seiko", model: "5 'Specialist'", code: "SRPD76", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m (10 Bar)", comp: "Day, Date, Hacking", value: "141000", egg: "Hacking Seconds: Stop time for exact sync.", img: "76.png", swiss: false },
-            { make: "Seiko", model: "5 'Arabic Dial'", code: "SNK063J5", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m (3 Bar)", comp: "Bilingual Day/Date", value: "85000", egg: "Secret Calendar: Arabic day wheel hidden.", img: "arabic.png", swiss: false },
-            { make: "G-Shock", model: "CasiOak", code: "GA2100", cat: "Rugged", mov: "Quartz (Digi-Ana)", wr: "100m (10 Bar)", comp: "World Time, 5 Alarms", value: "48000", egg: "Hand Shift: Move hands away from digital screen.", img: "casioak.png", swiss: false },
-            { make: "G-Shock", model: "Camo XL", code: "GA100CM-8A", cat: "Rugged", mov: "Quartz (Digi-Ana)", wr: "200m (20 Bar)", comp: "Speed Indicator", value: "52000", egg: "Mach Indicator: Center dial calculates speed.", img: "gshock.png", swiss: false },
-            { make: "Casio", model: "Vintage (Black/Gold)", code: "A168WEGB-1B", cat: "Digital Classic", mov: "Quartz", wr: "Splash Proof", comp: "Alarm, Stopwatch", value: "19500", egg: "Authenticity Check: Hold bottom-right for 'CASIo'.", img: "goldv.png", swiss: false },
-            { make: "Casio", model: "Vintage (Gunmetal)", code: "A168WGG-1B", cat: "Digital Classic", mov: "Quartz", wr: "Splash Proof", comp: "Alarm, Stopwatch", value: "18000", egg: "LCD Test: Hold all buttons to light segments.", img: "greyv.png", swiss: false },
-            { make: "Casio", model: "Edifice Chronograph", code: "EFV-500L-7AVUEF", cat: "Sports/Casual", mov: "Quartz", wr: "100m (10 Bar)", comp: "Chrono, 24hr Subdial, Date", value: "35000", egg: "24hr Sync: Prevents damage in 'danger zone'.", img: "edifice.png", swiss: false },
-            { make: "Fossil", model: "Goodwin Chronograph", code: "FS5415", cat: "Casual/Racing", mov: "Quartz", wr: "50m (5 Bar)", comp: "Flyback Chrono, Date", value: "28000", egg: "Tachymeter: Speed calculation on dial.", img: "goodwin.png", swiss: false },
-            { make: "Fossil", model: "Slimline Minimalist", code: "FS5305", cat: "Casual", mov: "Quartz", wr: "50m (5 Bar)", comp: "Three-Hand, Date", value: "22000", egg: "Ultra-Slim: Slide under dress shirt cuffs.", img: "slimline.png", swiss: false }
+            { make: "Tissot", model: "PRX Powermatic 80", code: "T137.407.11.041.00", cat: "Integrated Sports", mov: "Automatic (Powermatic 80)", wr: "100m (10 Bar)", comp: "Date, 80hr Reserve", value: "255000", egg: "Nivachron™ Spring: Highly anti-magnetic.", img: "prxp.png", swiss: true, palette: ["#0f172a", "#cbd5e1", "#b91c1c"] },
+            { make: "Tissot", model: "PRX Quartz (Mint)", code: "T137.410.11.091.01", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m (10 Bar)", comp: "Date", value: "137000", egg: "Quick-Release: Swap bracelet for strap in seconds.", img: "prxm.png", swiss: true, palette: ["#f8fafc", "#94a3b8", "#10b981"] },
+            { make: "Tissot", model: "PRX Quartz (Blue)", code: "T137.410.11.041.00", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m (10 Bar)", comp: "Date", value: "137000", egg: "70s Heritage: Direct reissue of the 1978 original.", img: "prxb.png", swiss: true, palette: ["#1e293b", "#e2e8f0", "#475569"] },
+            { make: "Tissot", model: "Carson Premium Moonphase", code: "T122.423.11.033.00", cat: "Dress", mov: "Quartz (ETA F05.841)", wr: "50m (5 Bar)", comp: "True Moonphase, Date", value: "165000", egg: "EOL Indicator: Seconds hand jumps 4s when low.", img: "carson.png", swiss: true, palette: ["#000000", "#475569", "#fbbf24"] },            
+            { make: "Tag Heuer", model: "Formula 1 Date", code: "WAZ1118.BA0875", cat: "Sports/Racing", mov: "Quartz", wr: "200m (20 Bar)", comp: "Date", value: "425000", egg: "Racing Extension: Clasp has a hidden fold-out.", img: "tag.png", swiss: true, palette: ["#1e293b", "#ef4444", "#ffffff"] },
+            { make: "Seiko", model: "5 'Specialist'", code: "SRPD76", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m (10 Bar)", comp: "Day, Date, Hacking", value: "141000", egg: "Hacking Seconds: Stop time for exact sync.", img: "76.png", swiss: false, palette: ["#1e1b4b", "#c2410c", "#525252"] },
+            { make: "Seiko", model: "5 'Arabic Dial'", code: "SNK063J5", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m (3 Bar)", comp: "Bilingual Day/Date", value: "85000", egg: "Secret Calendar: Arabic day wheel hidden.", img: "arabic.png", swiss: false, palette: ["#ffffff", "#4b5563", "#fbbf24"] },
+            { make: "G-Shock", model: "CasiOak", code: "GA2100", cat: "Rugged", mov: "Quartz (Digi-Ana)", wr: "100m (10 Bar)", comp: "World Time, 5 Alarms", value: "48000", egg: "Hand Shift: Move hands away from digital screen.", img: "casioak.png", swiss: false, palette: ["#1e293b", "#334155", "#000000"] },
+            { make: "G-Shock", model: "Camo XL", code: "GA100CM-8A", cat: "Rugged", mov: "Quartz (Digi-Ana)", wr: "200m (20 Bar)", comp: "Speed Indicator", value: "52000", egg: "Mach Indicator: Center dial calculates speed.", img: "gshock.png", swiss: false, palette: ["#454739", "#27272a", "#71717a"] },
+            { make: "Casio", model: "Vintage (Black/Gold)", code: "A168WEGB-1B", cat: "Digital Classic", mov: "Quartz", wr: "Splash Proof", comp: "Alarm, Stopwatch", value: "19500", egg: "Authenticity Check: Hold bottom-right for 'CASIo'.", img: "goldv.png", swiss: false, palette: ["#000000", "#fbbf24", "#3f3f46"] },
+            { make: "Casio", model: "Vintage (Gunmetal)", code: "A168WGG-1B", cat: "Digital Classic", mov: "Quartz", wr: "Splash Proof", comp: "Alarm, Stopwatch", value: "18000", egg: "LCD Test: Hold all buttons to light segments.", img: "greyv.png", swiss: false, palette: ["#27272a", "#e2e8f0", "#000000"] },
+            { make: "Casio", model: "Edifice Chronograph", code: "EFV-500L-7AVUEF", cat: "Sports/Casual", mov: "Quartz", wr: "100m (10 Bar)", comp: "Chrono, 24hr Subdial, Date", value: "35000", egg: "24hr Sync: Prevents damage in 'danger zone'.", img: "edifice.png", swiss: false, palette: ["#7c2d12", "#fef3c7", "#1e293b"] },
+            { make: "Fossil", model: "Goodwin Chronograph", code: "FS5415", cat: "Casual/Racing", mov: "Quartz", wr: "50m (5 Bar)", comp: "Flyback Chrono, Date", value: "28000", egg: "Tachymeter: Speed calculation on dial.", img: "goodwin.png", swiss: false, palette: ["#000000", "#e2e8f0", "#991b1b"] },
+            { make: "Fossil", model: "Slimline Minimalist", code: "FS5305", cat: "Casual", mov: "Quartz", wr: "50m (5 Bar)", comp: "Three-Hand, Date", value: "22000", egg: "Ultra-Slim: Slide under dress shirt cuffs.", img: "slimline.png", swiss: false, palette: ["#ffffff", "#1e293b", "#d4d4d8"] }
         ];
 
-        // --- NEW LOCOMOTIVE-STYLE ANIMATIONS ---
         gsap.to("#gear-main", { rotation: 360, duration: 25, repeat: -1, ease: "none" });
-        const balance = gsap.to("#gear-balance", { rotation: 40, duration: 0.12, repeat: -1, yoyo: true, ease: "power1.inOut" });
+        gsap.to("#gear-balance", { rotation: 40, duration: 0.12, repeat: -1, yoyo: true, ease: "power1.inOut" });
 
-        // Mouse Parallax for Background
         window.addEventListener('mousemove', (e) => {
             const x = (e.clientX / window.innerWidth - 0.5) * 40;
             const y = (e.clientY / window.innerHeight - 0.5) * 40;
             gsap.to("#blueprint-bg", { x: x * 0.5, y: y * 0.5, duration: 1, ease: "power2.out" });
             gsap.to("#gear-system", { x: -x, y: -y, duration: 1.5, ease: "power3.out" });
             
-            // Magnetic effect for buttons
             document.querySelectorAll('.magnetic-wrap').forEach(btn => {
                 const rect = btn.getBoundingClientRect();
                 const btnX = e.clientX - (rect.left + rect.width/2);
@@ -201,6 +203,10 @@
                     gsap.to(btn, { x: 0, y: 0, duration: 0.5 });
                 }
             });
+
+            if (document.body.classList.contains('lume-mode')) {
+                gsap.to("#uv-torch", { left: e.clientX, top: e.clientY, duration: 0.1 });
+            }
         });
 
         function updateClock() {
@@ -222,6 +228,14 @@
             document.getElementById('m-egg').innerText = w.egg;
             document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[450px] drop-shadow-2xl" onerror="this.src='https://via.placeholder.com/500?text=${w.model}'">`;
             
+            const pDots = document.getElementById('m-palette-dots');
+            pDots.innerHTML = w.palette.map(color => `
+                <div class="flex flex-col items-center gap-2">
+                    <div class="swatch-large shadow-lg" style="background: ${color}"></div>
+                    <span class="text-[8px] mono-font opacity-40">${color.toUpperCase()}</span>
+                </div>
+            `).join('');
+
             modal.style.display = 'flex';
             gsap.to(modal, { opacity: 1, duration: 0.5 });
             gsap.to(content, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.8)" });
@@ -246,13 +260,18 @@
                     <div class="img-container mb-10 relative z-10">
                         <img src="${w.img}" class="watch-img group-hover:scale-110 transition-transform duration-700" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'">
                     </div>
-                    <div class="relative z-10">
+                    <div class="relative z-10 flex flex-col h-full">
                         <h4 class="text-white/20 text-[9px] uppercase font-black tracking-[0.3em] mb-2">${w.make}</h4>
-                        <h2 class="lux-font text-3xl mb-6 group-hover:text-yellow-500 transition-colors">${w.model}</h2>
+                        <h2 class="lux-font text-3xl mb-4 group-hover:text-yellow-500 transition-colors">${w.model}</h2>
+                        
+                        <div class="flex gap-2 mb-6">
+                            ${w.palette.map(color => `<div class="swatch-pip" style="background: ${color}"></div>`).join('')}
+                        </div>
+
                         <div class="mt-auto pt-8 border-t border-white/5 flex justify-between items-center">
                             <span class="text-[10px] mono-font opacity-40">${w.wr}</span>
                             <div class="text-right">
-                                <span class="text-[8px] opacity-20 block mb-1">VALUATION</span>
+                                <span class="text-[8px] opacity-20 block mb-1 uppercase">Value</span>
                                 <span class="text-yellow-500 mono-font font-black">${parseInt(w.value).toLocaleString()} LKR</span>
                             </div>
                         </div>
@@ -276,7 +295,6 @@
             gsap.to(".watch-card", { opacity: 1, y: 0, duration: 1.2, stagger: 0.1, ease: "power4.out" });
         }
 
-        // --- PRE-EXISTING LOGIC REMAINS INTEGRATED ---
         function updateAnalytics(data) {
             const total = data.reduce((acc, w) => acc + parseInt(w.value), 0);
             const autoCount = data.filter(w => w.mov.includes('Automatic')).length;
@@ -288,8 +306,17 @@
             document.getElementById('swiss-perc').innerText = `${swissRatio}%`;
             gsap.to("#swiss-bar", { width: `${swissRatio}%`, duration: 2, ease: "expo.out" });
 
+            // Re-sync visualizer speed based on active mechanical count
             const bars = document.querySelectorAll('.beat-bar');
-            bars.forEach(bar => gsap.to(bar, { scaleY: 1 + Math.random() * 4, duration: autoCount > 0 ? 0.2 : 2, repeat: -1, yoyo: true }));
+            bars.forEach(bar => {
+                gsap.to(bar, { 
+                    scaleY: 1 + Math.random() * 8, 
+                    duration: autoCount > 0 ? 0.15 : 1.5, 
+                    repeat: -1, 
+                    yoyo: true, 
+                    ease: "sine.inOut" 
+                });
+            });
         }
 
         function toggleLume() { document.body.classList.toggle('lume-mode'); }
@@ -309,7 +336,6 @@
             updateClock();
             renderWatches(watches);
             
-            // Moon phase logic
             const lp = 2551443; 
             const now = new Date();
             const phase = ((now.getTime() - new Date(1970, 0, 7, 20, 35, 0).getTime()) / 1000) % lp;
