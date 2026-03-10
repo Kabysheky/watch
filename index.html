@@ -18,7 +18,6 @@
         .lux-font { font-family: 'Playfair Display', serif; }
         .mono-font { font-family: 'Space Grotesk', sans-serif; }
         
-        /* Shutter Loader Styles */
         #loader-wrapper { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .shutter-container { position: absolute; inset: 0; display: flex; pointer-events: none; }
         .shutter-slat { flex: 1; background: #000; height: 100%; border-right: 1px solid rgba(255,255,255,0.02); }
@@ -54,12 +53,8 @@
 
     <div id="loader-wrapper">
         <div class="shutter-container">
-            <div class="shutter-slat"></div>
-            <div class="shutter-slat"></div>
-            <div class="shutter-slat"></div>
-            <div class="shutter-slat"></div>
-            <div class="shutter-slat"></div>
-            <div class="shutter-slat"></div>
+            <div class="shutter-slat"></div><div class="shutter-slat"></div><div class="shutter-slat"></div>
+            <div class="shutter-slat"></div><div class="shutter-slat"></div><div class="shutter-slat"></div>
         </div>
         <div class="loader-content">
             <svg class="w-64 h-64 -rotate-90" viewBox="0 0 200 200">
@@ -128,10 +123,13 @@
                 <span id="m-make" class="text-yellow-500 text-[10px] tracking-[0.6em] font-black uppercase mb-2"></span>
                 <h2 id="m-model" class="lux-font text-5xl mb-2 text-white"></h2>
                 <p id="m-ref" class="mono-font text-white/40 text-[10px] tracking-widest mb-8 uppercase"></p>
-                <div class="grid grid-cols-2 gap-4 mb-8">
-                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Movement</span><p id="m-mov" class="text-xs font-bold"></p></div>
-                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Resistance</span><p id="m-wr" class="text-xs font-bold"></p></div>
+                
+                <div class="grid grid-cols-3 gap-4 mb-8">
+                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Movement</span><p id="m-mov" class="text-[10px] font-bold"></p></div>
+                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Resistance</span><p id="m-wr" class="text-[10px] font-bold"></p></div>
+                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Case Size</span><p id="m-size" class="text-[10px] font-bold"></p></div>
                 </div>
+
                 <div class="space-y-6 mb-10">
                     <div><h4 class="text-[8px] text-yellow-500/50 font-black uppercase tracking-[0.3em] mb-2">Technical Functions</h4><p id="m-comp" class="text-sm text-white/70 leading-relaxed"></p></div>
                     <div><h4 class="text-[8px] text-yellow-500/50 font-black uppercase tracking-[0.3em] mb-2">Quirks & Details</h4><p id="m-egg" class="text-sm italic text-yellow-500/80 leading-relaxed"></p></div>
@@ -147,20 +145,20 @@
 
 <script>
     const watches = [
-        { id: 0, make: "Tissot", model: "PRX Powermatic 80", ref: "T137.407.11.041.00", cat: "Integrated Sports", mov: "Automatic (ETA C07.111)", wr: "100m", comp: "Instantaneous Date, 80-Hour Reserve, Hacking Seconds", bought: 235000, value: 255000, egg: "Waffle dial and Nivachron™ anti-magnetic spring.", img: "prxp.png", palette: ["#0f172a", "#cbd5e1", "#b91c1c"] },
-        { id: 1, make: "Tissot", model: "PRX Quartz (Mint)", ref: "T137.410.11.091.01", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m", comp: "End-of-Life Indicator, Date Display", bought: 130000, value: 137000, egg: "The viral mint dial that redefined modern sports watches.", img: "prxm.png", palette: ["#f8fafc", "#94a3b8", "#10b981"] },
-        { id: 2, make: "Tissot", model: "PRX Quartz (Blue)", ref: "T137.410.11.041.00", cat: "Integrated Sports", mov: "Quartz", wr: "100m", comp: "Sunray Blue Dial, Date", bought: 130000, value: 137000, egg: "Iconic integrated bracelet design from 1978.", img: "prxb.png", palette: ["#1e293b", "#e2e8f0", "#475569"] },
-        { id: 3, make: "Tissot", model: "Carson Moonphase", ref: "T122.423.11.033.00", cat: "Dress", mov: "Quartz (Renata 394)", wr: "50m", comp: "Moonphase Complication, Roman Numerals", bought: 155000, value: 165000, egg: "Features a poetic lunar cycle on a silver leaf dial.", img: "carson.png", palette: ["#000000", "#475569", "#fbbf24"] },
-        { id: 4, make: "Tag Heuer", model: "Formula 1 Date", ref: "WAZ1110.BA0875", cat: "Racing", mov: "Quartz", wr: "200m", comp: "Screw-down Crown, Unidirectional Bezel", bought: 380000, value: 425000, egg: "Professional diving specs combined with racing DNA.", img: "tag.png", palette: ["#1e293b", "#ef4444", "#ffffff"] },
-        { id: 5, make: "Seiko", model: "5 'Specialist'", ref: "SRPD55K1", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m", comp: "Day/Date, Manual Winding, Hacking", bought: 125000, value: 141000, egg: "Robust 4R36 movement visible through the caseback.", img: "76.png", palette: ["#1e1b4b", "#c2410c", "#525252"] },
-        { id: 6, make: "Seiko", model: "5 'Arabic Dial'", ref: "SNKP21J1", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m", comp: "Eastern Arabic Numerals, Day/Date", bought: 65000, value: 85000, egg: "A rare regional masterpiece with huge cult status.", img: "arabic.png", palette: ["#ffffff", "#4b5563", "#fbbf24"] },
-        { id: 7, make: "G-Shock", model: "CasiOak", ref: "GA-2100-1A1", cat: "Rugged", mov: "Module 5611", wr: "200m", comp: "Carbon Core Guard, World Time, Alarms", bought: 42000, value: 48000, egg: "Modern legend with a slim, octagonal profile.", img: "casioak.png", palette: ["#1e293b", "#334155", "#000000"] },
-        { id: 8, make: "G-Shock", model: "Camo XL", ref: "GA-100MM", cat: "Rugged", mov: "Quartz", wr: "200m", comp: "Speed Indicator, 1/1000 sec Chrono", bought: 48000, value: 52000, egg: "Magnetic resistant structure with XL presence.", img: "gshock.png", palette: ["#454739", "#27272a", "#71717a"] },
-        { id: 9, make: "Casio", model: "Vintage (Black/Gold)", ref: "A168WG-9", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "EL Backlight, Stopwatch", bought: 15000, value: 19500, egg: "The absolute gold standard of 80s retro-futurism.", img: "goldv.png", palette: ["#000000", "#fbbf24", "#3f3f46"] },
-        { id: 10, make: "Casio", model: "Vintage (Gunmetal)", ref: "A168WGG-1B", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "Negative Display, Stealth Case", bought: 14000, value: 18000, egg: "Ion-plated gunmetal for a modern tactical look.", img: "greyv.png", palette: ["#27272a", "#e2e8f0", "#000000"] },
-        { id: 11, make: "Casio", model: "Edifice Chrono", ref: "EFR-556DB", cat: "Casual", mov: "Quartz", wr: "100m", comp: "3-Dial Chronograph, Date Display", bought: 28000, value: 35000, egg: "Motorsport-inspired layered dial depth.", img: "edifice.png", palette: ["#7c2d12", "#fef3c7", "#1e293b"] },
-        { id: 12, make: "Fossil", model: "Goodwin Chrono", ref: "FS5412", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Tachymeter, 60-second Chrono", bought: 22000, value: 28000, egg: "Classic racing aesthetics with a domed crystal lens.", img: "goodwin.png", palette: ["#000000", "#e2e8f0", "#991b1b"] },
-        { id: 13, make: "Fossil", model: "Minimalist Slim", ref: "FS5305", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Time-only, Ultra-thin Profile", bought: 18000, value: 22000, egg: "Maximum simplicity in a low-profile stainless case.", img: "slimline.png", palette: ["#ffffff", "#1e293b", "#d4d4d8"] }
+        { id: 0, make: "Tissot", model: "PRX Powermatic 80", ref: "T137.407.11.041.00", size: "40mm", cat: "Integrated Sports", mov: "Automatic (ETA C07.111)", wr: "100m", comp: "Instantaneous Date, 80-Hour Reserve, Hacking Seconds", bought: 235000, value: 255000, egg: "Waffle dial and Nivachron™ anti-magnetic spring.", img: "prxp.png", palette: ["#0f172a", "#cbd5e1", "#b91c1c"] },
+        { id: 1, make: "Tissot", model: "PRX Quartz (Mint)", ref: "T137.410.11.091.01", size: "40mm", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m", comp: "End-of-Life Indicator, Date Display", bought: 130000, value: 137000, egg: "The viral mint dial that redefined modern sports watches.", img: "prxm.png", palette: ["#f8fafc", "#94a3b8", "#10b981"] },
+        { id: 2, make: "Tissot", model: "PRX Quartz (Blue)", ref: "T137.410.11.041.00", size: "40mm", cat: "Integrated Sports", mov: "Quartz", wr: "100m", comp: "Sunray Blue Dial, Date", bought: 130000, value: 137000, egg: "Iconic integrated bracelet design from 1978.", img: "prxb.png", palette: ["#1e293b", "#e2e8f0", "#475569"] },
+        { id: 3, make: "Tissot", model: "Carson Moonphase", ref: "T122.423.11.033.00", size: "40mm", cat: "Dress", mov: "Quartz (Renata 394)", wr: "50m", comp: "Moonphase Complication, Roman Numerals", bought: 155000, value: 165000, egg: "Features a poetic lunar cycle on a silver leaf dial.", img: "carson.png", palette: ["#000000", "#475569", "#fbbf24"] },
+        { id: 4, make: "Tag Heuer", model: "Formula 1 Date", ref: "WAZ1110.BA0875", size: "41mm", cat: "Racing", mov: "Quartz", wr: "200m", comp: "Screw-down Crown, Unidirectional Bezel", bought: 380000, value: 425000, egg: "Professional diving specs combined with racing DNA.", img: "tag.png", palette: ["#1e293b", "#ef4444", "#ffffff"] },
+        { id: 5, make: "Seiko", model: "5 'Specialist'", ref: "SRPD55K1", size: "42.5mm", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m", comp: "Day/Date, Manual Winding, Hacking", bought: 125000, value: 141000, egg: "Robust 4R36 movement visible through the caseback.", img: "76.png", palette: ["#1e1b4b", "#c2410c", "#525252"] },
+        { id: 6, make: "Seiko", model: "5 'Arabic Dial'", ref: "SNKP21J1", size: "42mm", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m", comp: "Eastern Arabic Numerals, Day/Date", bought: 65000, value: 85000, egg: "A rare regional masterpiece with huge cult status.", img: "arabic.png", palette: ["#ffffff", "#4b5563", "#fbbf24"] },
+        { id: 7, make: "G-Shock", model: "CasiOak", ref: "GA-2100-1A1", size: "45.4mm", cat: "Rugged", mov: "Module 5611", wr: "200m", comp: "Carbon Core Guard, World Time, Alarms", bought: 42000, value: 48000, egg: "Modern legend with a slim, octagonal profile.", img: "casioak.png", palette: ["#1e293b", "#334155", "#000000"] },
+        { id: 8, make: "G-Shock", model: "Camo XL", ref: "GA-100MM", size: "51.2mm", cat: "Rugged", mov: "Quartz", wr: "200m", comp: "Speed Indicator, 1/1000 sec Chrono", bought: 48000, value: 52000, egg: "Magnetic resistant structure with XL presence.", img: "gshock.png", palette: ["#454739", "#27272a", "#71717a"] },
+        { id: 9, make: "Casio", model: "Vintage (Black/Gold)", ref: "A168WG-9", size: "36.3mm", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "EL Backlight, Stopwatch", bought: 15000, value: 19500, egg: "The absolute gold standard of 80s retro-futurism.", img: "goldv.png", palette: ["#000000", "#fbbf24", "#3f3f46"] },
+        { id: 10, make: "Casio", model: "Vintage (Gunmetal)", ref: "A168WGG-1B", size: "36.3mm", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "Negative Display, Stealth Case", bought: 14000, value: 18000, egg: "Ion-plated gunmetal for a modern tactical look.", img: "greyv.png", palette: ["#27272a", "#e2e8f0", "#000000"] },
+        { id: 11, make: "Casio", model: "Edifice Chrono", ref: "EFR-556DB", size: "48.7mm", cat: "Casual", mov: "Quartz", wr: "100m", comp: "3-Dial Chronograph, Date Display", bought: 28000, value: 35000, egg: "Motorsport-inspired layered dial depth.", img: "edifice.png", palette: ["#7c2d12", "#fef3c7", "#1e293b"] },
+        { id: 12, make: "Fossil", model: "Goodwin Chrono", ref: "FS5412", size: "44mm", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Tachymeter, 60-second Chrono", bought: 22000, value: 28000, egg: "Classic racing aesthetics with a domed crystal lens.", img: "goodwin.png", palette: ["#000000", "#e2e8f0", "#991b1b"] },
+        { id: 13, make: "Fossil", model: "Minimalist Slim", ref: "FS5305", size: "44mm", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Time-only, Ultra-thin Profile", bought: 18000, value: 22000, egg: "Maximum simplicity in a low-profile stainless case.", img: "slimline.png", palette: ["#ffffff", "#1e293b", "#d4d4d8"] }
     ];
 
     function renderWatches(data) {
@@ -183,6 +181,7 @@
                             <p class="mono-font text-[7px] text-white/20 tracking-widest uppercase mb-4">${w.ref}</p>
                             <div class="flex justify-between items-center text-[8px] mono-font opacity-30 uppercase tracking-widest">
                                 <span>${w.mov.split(' ')[0]} / ${w.wr}</span>
+                                <span class="text-white/60 font-black">${w.size}</span>
                             </div>
                         </div>
                     </div>
@@ -317,6 +316,7 @@
         document.getElementById('m-ref').innerText = w.ref; 
         document.getElementById('m-mov').innerText = w.mov; 
         document.getElementById('m-wr').innerText = w.wr; 
+        document.getElementById('m-size').innerText = w.size; // New line added
         document.getElementById('m-comp').innerText = w.comp; 
         document.getElementById('m-egg').innerText = w.egg; 
         document.getElementById('m-val').innerText = w.value.toLocaleString() + ' LKR'; 
