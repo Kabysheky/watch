@@ -3,347 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kash Watch Vault | Engineering & Horology</title>
+    <title>Kash Watch Vault | Definitive v4.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #fbbf24; --bg: #030303; --lume: #00ffff; --slate: #1e293b; }
-        body { background: var(--bg); font-family: 'Inter', sans-serif; color: #e2e8f0; overflow-x: hidden; margin: 0; }
+        :root { --gold: #fbbf24; --bg: #050505; --lume: #00ffff; --glass: rgba(255, 255, 255, 0.03); }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; color: #e2e8f0; scroll-behavior: smooth; overflow-x: hidden; transition: background 0.5s ease; }
         .lux-font { font-family: 'Playfair Display', serif; }
         .mono-font { font-family: 'Space Grotesk', sans-serif; }
         
-        .magnetic-wrap { display: inline-block; transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1); }
+        .glass-card { background: var(--glass); backdrop-filter: blur(50px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .watch-card-container { perspective: 2000px; height: 620px; transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
+        .is-flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 2.5rem; overflow: hidden; }
+        .card-back { transform: rotateY(180deg); background: radial-gradient(circle at center, #111 0%, #050505 100%); border: 1px solid rgba(251, 191, 36, 0.2); }
         
-        #blueprint-bg { position: fixed; inset: 0; z-index: -1; opacity: 0.15; pointer-events: none; }
-        .grid-line { stroke: rgba(255,255,255,0.1); stroke-width: 0.5; }
-
-        #gear-system { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.08; pointer-events: none; }
-        .gear-path { fill: none; stroke: white; stroke-width: 0.5; stroke-dasharray: 4 4; }
-        
-        body.lume-mode { background: #000; color: var(--lume); }
-        body.lume-mode .glass-card { background: rgba(0, 255, 255, 0.02); border-color: rgba(0, 255, 255, 0.2); box-shadow: 0 0 20px rgba(0,255,255,0.05); }
-        body.lume-mode .watch-img { filter: brightness(0.8) drop-shadow(0 0 15px var(--lume)); mix-blend-mode: screen; }
-        body.lume-mode .text-yellow-500 { color: var(--lume) !important; text-shadow: 0 0 10px var(--lume); }
-
-        #uv-torch { 
-            position: fixed; top: 0; left: 0; width: 400px; height: 400px; 
-            background: radial-gradient(circle, rgba(0, 255, 255, 0.12) 0%, rgba(0,0,0,0) 70%);
-            pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%);
-        }
+        body.lume-mode { background: #000; }
+        body.lume-mode .watch-img { filter: brightness(1.3) drop-shadow(0 0 25px var(--lume)); mix-blend-mode: screen; }
+        #uv-torch { position: fixed; width: 450px; height: 450px; background: radial-gradient(circle, rgba(0, 255, 255, 0.12) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 999; display: none; transform: translate(-50%, -50%); }
         body.lume-mode #uv-torch { display: block; }
 
-        .glass-card { 
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%); 
-            backdrop-filter: blur(30px); 
-            border: 1px solid rgba(255, 255, 255, 0.07); 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+        .match-perfect { border: 2px solid var(--gold) !important; box-shadow: 0 0 60px rgba(251, 191, 36, 0.3); transform: translateY(-25px) scale(1.05); z-index: 40; opacity: 1 !important; filter: none !important; }
+        .match-suggested { border: 2px solid rgba(255, 255, 255, 0.5) !important; box-shadow: 0 0 40px rgba(255, 255, 255, 0.1); transform: translateY(-15px) scale(1.02); z-index: 30; opacity: 1 !important; filter: none !important; }
+        body.has-match .watch-card-container:not(.match-perfect):not(.match-suggested) { opacity: 0.15; filter: grayscale(1) blur(4px); pointer-events: none; }
         
-        .category-tag { font-size: 8px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 800; background: rgba(255,255,255,0.03); }
-        .tag-integrated-sports { color: #22d3ee; border: 1px solid #22d3ee44; }
-        .tag-dress { color: #a78bfa; border: 1px solid #a78bfa44; }
-        .tag-rugged { color: #f87171; border: 1px solid #f8717144; }
-        .tag-digital-classic { color: #fbbf24; border: 1px solid #fbbf2444; }
-
-        .img-container { height: 280px; perspective: 1200px; cursor: crosshair; }
-        .watch-img { transition: filter 0.5s ease; max-height: 95%; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.7)); }
-
-        .beat-bar { width: 3px; background: linear-gradient(to top, var(--gold), transparent); border-radius: 2px; height: 4px; }
-        .stat-progress { background: linear-gradient(90deg, var(--gold), #f59e0b); }
-
-        /* PALETTE UI */
-        .swatch-pip { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
-        .swatch-large { width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; background: none; }
+        input[type="color"]::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; }
+        .gear { fill: none; stroke: var(--gold); stroke-width: 0.5; opacity: 0.4; transform-origin: center; }
+        
+        .toggle-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 4px; display: flex; gap: 4px; }
+        .toggle-btn { font-size: 8px; font-weight: 900; letter-spacing: 0.1em; padding: 6px 16px; border-radius: 999px; transition: all 0.3s ease; color: rgba(255,255,255,0.4); }
+        .toggle-btn.active { background: var(--gold); color: black; }
     </style>
 </head>
 <body class="pb-20">
-
     <div id="uv-torch"></div>
-
-    <svg id="blueprint-bg">
-        <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
-            <path d="M 100 0 L 0 0 0 100" fill="none" class="grid-line"/>
-            <circle cx="0" cy="0" r="1" fill="rgba(255,255,255,0.2)"/>
-        </pattern>
-        <rect width="100%" height="100%" fill="url(#grid)" />
-    </svg>
-
-    <svg id="gear-system" viewBox="0 0 100 100">
-        <g id="gear-main" transform="translate(50, 50)"><circle class="gear-path" r="20"/></g>
-        <g id="gear-balance" transform="translate(85, 15)"><circle class="gear-path" r="12" /><line class="gear-path" x1="-12" y1="0" x2="12" y2="0" /></g>
-    </svg>
-
-    <nav class="sticky top-0 z-50 px-10 py-6 bg-black/60 backdrop-blur-2xl border-b border-white/5 flex flex-col lg:flex-row justify-between items-center gap-8">
-        <div class="flex flex-col group cursor-default">
-            <h1 class="lux-font text-5xl tracking-tighter text-yellow-500 leading-none transition-transform group-hover:scale-105">KASH</h1>
-            <span class="text-[9px] uppercase tracking-[0.6em] text-white/30 mt-2 font-black">Technical Archive v2.0</span>
+    <nav class="sticky top-0 z-50 px-8 py-5 bg-black/90 backdrop-blur-2xl border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-baseline gap-4">
+            <h1 class="lux-font text-4xl tracking-tighter text-yellow-500 uppercase">Kash</h1>
+            <span class="text-[7px] uppercase tracking-[0.8em] text-white/20 font-extrabold">Vault Caliber v4.5</span>
         </div>
-        <div class="flex flex-col md:flex-row items-center gap-6">
-            <button class="magnetic-wrap bg-white/5 border border-white/10 text-[9px] tracking-[3px] py-2 px-8 rounded-full hover:bg-white/10 hover:border-yellow-500 transition-all" onclick="toggleLume()">LUME MODE</button>
-            <div class="relative">
-                <input type="text" id="searchInput" placeholder="LOCATE CALIBER..." class="bg-white/5 border border-white/10 px-8 py-2 rounded-full text-xs w-72 mono-font outline-none focus:ring-1 focus:ring-yellow-500/50 transition-all" oninput="handleSearch()">
-            </div>
-            <div class="flex gap-3 text-[10px] mono-font">
-                <button class="magnetic-wrap px-4 py-2 rounded-full border border-white/10 hover:text-yellow-500" onclick="filterWatches('All')">TOTAL</button>
-                <button class="magnetic-wrap px-4 py-2 rounded-full border border-white/10 hover:text-yellow-500" onclick="filterWatches('Automatic')">MECHANICAL</button>
-                <button class="magnetic-wrap px-4 py-2 rounded-full border border-white/10 hover:text-yellow-500" onclick="filterWatches('Quartz')">ELECTRONIC</button>
-            </div>
+        <div class="flex items-center gap-4">
+            <button class="bg-white/5 border border-white/10 text-[8px] tracking-[2px] py-2 px-6 rounded-lg hover:bg-yellow-500 hover:text-black transition-all" onclick="toggleLume()">LUME MODE</button>
+            <input type="text" id="searchInput" placeholder="SEARCH VAULT..." class="bg-white/5 border border-white/10 px-6 py-2 rounded-lg text-[10px] w-48 mono-font outline-none focus:border-yellow-500/50" oninput="handleSearch()">
+            <button class="bg-red-500/10 border border-red-500/20 text-red-500 text-[8px] tracking-[2px] py-2 px-4 rounded-lg hidden" id="clearBtn" onclick="resetView()">RESET VIEW</button>
         </div>
     </nav>
 
-    <header class="max-w-7xl mx-auto px-6 pt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div class="p-8 rounded-3xl glass-card border-t-2 border-t-yellow-500/50">
-            <p class="text-[9px] uppercase opacity-40 tracking-widest mb-2 font-black">Capital Asset Value</p>
-            <h3 class="text-3xl font-bold mono-font text-yellow-500" id="val-counter">0</h3>
-        </div>
-
-        <div class="p-8 rounded-3xl glass-card">
-            <p class="text-[9px] uppercase opacity-40 font-black mb-2">Atomic Precision</p>
-            <div class="flex items-baseline gap-1">
-                <h3 class="text-3xl font-bold mono-font text-white" id="real-time-clock">00:00:00</h3>
-                <span class="text-yellow-500 text-xs mono-font" id="clock-ms">.00</span>
+    <header class="max-w-[1400px] mx-auto px-8 pt-10 grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div class="md:col-span-5 p-8 rounded-[2.5rem] glass-card border-t-2 border-t-yellow-500/30">
+            <div class="flex justify-between items-center mb-6">
+                <p class="text-[8px] uppercase opacity-40 font-black tracking-[0.3em]">Style Engine Optimization</p>
+                <div class="toggle-pill">
+                    <button id="mode-min" class="toggle-btn active" onclick="setMode('minimalist')">MINIMALIST</button>
+                    <button id="mode-con" class="toggle-btn" onclick="setMode('contrast')">CONTRAST</button>
+                </div>
+                <input type="hidden" id="styleMode" value="minimalist">
             </div>
-            <p id="clock-date" class="text-[9px] opacity-30 mt-3 uppercase tracking-widest font-bold">CALIBRATING...</p>
-        </div>
-
-        <div class="p-8 rounded-3xl glass-card flex items-center gap-5">
-            <div class="relative w-14 h-14 bg-gradient-to-b from-[#0f172a] to-black rounded-full p-[1px]">
-                <div class="w-full h-full rounded-full bg-black relative overflow-hidden border border-white/10">
-                    <div id="moon-disk" class="absolute inset-0 flex items-center justify-center">
-                        <div class="w-10 h-10 bg-gradient-to-tr from-yellow-100 to-yellow-500 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.3)]"></div>
-                    </div>
-                    <div id="moon-mask" class="absolute inset-0 bg-black translate-x-0 transition-transform duration-[2000ms]"></div>
+            <div class="flex items-center gap-8 justify-center">
+                <div class="flex gap-4">
+                    <div class="text-center"><input type="color" id="topColor" value="#ffffff"><p class="text-[7px] font-black mt-2 opacity-30">TOP</p></div>
+                    <div class="text-center"><input type="color" id="bottomColor" value="#1a1a1a"><p class="text-[7px] font-black mt-2 opacity-30">BOTTOM</p></div>
+                </div>
+                <div class="h-12 w-px bg-white/10"></div>
+                <div class="flex-1 text-center">
+                    <button onclick="findMatches()" class="w-full py-4 rounded-xl bg-yellow-500 text-black text-[9px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all active:scale-95">Scan Collection</button>
+                    <p id="match-status" class="text-[8px] mt-3 font-bold text-white/30 uppercase tracking-widest">Perceptual Filter</p>
                 </div>
             </div>
-            <div>
-                <p class="text-[9px] uppercase opacity-40 font-black mb-1">Lunar Cycle</p>
-                <p id="moon-label" class="text-xs mono-font font-bold">FETCHING...</p>
-            </div>
         </div>
-
-        <div class="p-8 rounded-3xl glass-card">
-            <p class="text-[9px] uppercase opacity-40 font-black mb-4">Frequency Oscillation</p>
-            <div class="flex items-end gap-1.5 h-10" id="beat-visualizer"></div>
+        <div class="md:col-span-3 p-8 rounded-[2.5rem] glass-card flex flex-col justify-center text-center">
+            <p class="text-[8px] uppercase opacity-40 font-black tracking-[0.3em] mb-2">Portfolio Valuation</p>
+            <h3 class="text-3xl font-bold mono-font text-yellow-500" id="val-counter">0 LKR</h3>
+            <p class="text-[9px] text-green-400 mt-2 font-bold tracking-widest" id="roi-stat">---</p>
         </div>
-
-        <div class="p-8 rounded-3xl glass-card">
-            <div class="flex justify-between items-center mb-2">
-                <p class="text-[9px] uppercase opacity-40 font-black">Swiss Lineage</p>
-                <span id="swiss-perc" class="text-[10px] mono-font font-bold">0%</span>
-            </div>
-            <div class="h-2 bg-white/5 rounded-full overflow-hidden">
-                <div id="swiss-bar" class="stat-progress h-full w-0"></div>
-            </div>
-            <p class="text-[9px] opacity-30 mt-3 uppercase font-bold" id="asset-count">0 UNITS</p>
+        <div class="md:col-span-4 p-8 rounded-[2.5rem] glass-card flex justify-between items-center">
+            <div class="flex items-center gap-4"><div class="relative w-12 h-12 bg-black rounded-full border border-white/10 overflow-hidden"><div id="moon-disk" class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-8 bg-gradient-to-tr from-yellow-100 to-yellow-500 rounded-full blur-[1px]"></div></div><div id="moon-mask" class="absolute inset-0 bg-black translate-x-0 transition-transform duration-1000"></div></div><div><p class="text-[7px] opacity-40 font-black tracking-widest uppercase">Moonphase</p><p id="moon-label" class="text-[10px] font-bold mono-font">---</p></div></div>
+            <div class="text-right"><h3 class="text-3xl font-bold mono-font leading-none mb-1" id="real-time-clock">00:00:00</h3><p id="clock-date" class="text-[8px] opacity-30 font-black uppercase tracking-[0.2em]">---</p></div>
         </div>
     </header>
 
-    <main id="watch-grid" class="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"></main>
+    <main id="watch-grid" class="max-w-[1400px] mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"></main>
 
     <div id="modal-overlay" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/95 backdrop-blur-3xl p-6" onclick="closeModal()">
-        <div class="max-w-5xl w-full glass-card p-12 rounded-[3rem] grid grid-cols-1 lg:grid-cols-2 gap-16 scale-90 opacity-0" id="modal-content" onclick="event.stopPropagation()">
-            <div id="modal-img-frame" class="flex items-center justify-center bg-white/[0.01] rounded-[2rem] p-8 border border-white/5 shadow-inner"></div>
-            <div class="flex flex-col justify-center">
-                <span id="m-make" class="text-yellow-500 text-[10px] tracking-[0.4em] font-black mb-4 bg-yellow-500/10 px-4 py-1 rounded-full inline-block w-fit"></span>
-                <h2 id="m-model" class="lux-font text-5xl mb-6 leading-tight"></h2>
-                
-                <div class="mb-8 border-y border-white/5 py-6">
-                    <p class="text-[9px] opacity-40 font-bold mb-4 tracking-widest uppercase">Sartorial Pairing</p>
-                    <div id="m-palette-dots" class="flex gap-5"></div>
+        <div class="max-w-7xl w-full glass-card p-10 md:p-14 rounded-[4rem] grid grid-cols-1 lg:grid-cols-12 gap-12 scale-95 opacity-0 transition-all duration-500 max-h-[90vh] overflow-y-auto" id="modal-content" onclick="event.stopPropagation()">
+            <div class="lg:col-span-6 flex items-center justify-center bg-white/[0.02] rounded-[3rem] p-10 border border-white/5"><div id="modal-img-frame"></div></div>
+            <div class="lg:col-span-6 flex flex-col justify-center">
+                <span id="m-make" class="text-yellow-500 text-[10px] tracking-[0.6em] font-black uppercase mb-2"></span>
+                <h2 id="m-model" class="lux-font text-5xl mb-2 text-white"></h2>
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Movement</span><p id="m-mov" class="text-xs font-bold"></p></div>
+                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Resistance</span><p id="m-wr" class="text-xs font-bold"></p></div>
                 </div>
-
-                <div class="grid grid-cols-2 gap-8 mb-8">
-                    <div class="border-l border-white/10 pl-4"><span class="text-[9px] opacity-40 block mb-1 font-bold">CALIBER</span><p id="m-mov" class="text-sm mono-font"></p></div>
-                    <div class="border-l border-white/10 pl-4"><span class="text-[9px] opacity-40 block mb-1 font-bold">DEPTH RATING</span><p id="m-wr" class="text-sm mono-font"></p></div>
+                <div class="space-y-6 mb-10">
+                    <div><h4 class="text-[8px] text-yellow-500/50 font-black uppercase tracking-[0.3em] mb-2">Technical Functions</h4><p id="m-comp" class="text-sm text-white/70 leading-relaxed"></p></div>
+                    <div><h4 class="text-[8px] text-yellow-500/50 font-black uppercase tracking-[0.3em] mb-2">Quirks & Details</h4><p id="m-egg" class="text-sm italic text-yellow-500/80 leading-relaxed"></p></div>
                 </div>
-                <div class="bg-white/[0.03] p-6 rounded-2xl border border-white/5">
-                    <p class="text-[9px] opacity-40 font-bold mb-2 tracking-widest uppercase">Technical Log</p>
-                    <p id="m-egg" class="text-sm italic text-white/80 leading-relaxed"></p>
+                <div class="pt-8 border-t border-white/5 grid grid-cols-2 gap-4">
+                    <div><span class="text-[8px] opacity-30 block mb-1 font-black uppercase tracking-widest">Value</span><p id="m-val" class="text-2xl mono-font font-bold"></p></div>
+                    <div class="text-right"><span class="text-[8px] opacity-30 block mb-1 font-black uppercase tracking-widest">Paid</span><p id="m-bought" class="text-2xl mono-font text-white/40"></p></div>
                 </div>
-                <button onclick="closeModal()" class="mt-10 py-4 rounded-xl border border-white/10 text-[10px] tracking-[0.3em] font-bold hover:bg-white hover:text-black transition-all">BACK TO VAULT</button>
+                <button onclick="closeModal()" class="mt-10 py-5 rounded-2xl border border-white/10 text-[9px] font-black uppercase tracking-[0.6em] hover:bg-white hover:text-black transition-all">Exit Archive</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const watches = [
-            { make: "Tissot", model: "PRX Powermatic 80", code: "T137.407.11.041.00", cat: "Integrated Sports", mov: "Automatic (Powermatic 80)", wr: "100m (10 Bar)", comp: "Date, 80hr Reserve", value: "255000", egg: "Nivachron™ Spring: Highly anti-magnetic.", img: "prxp.png", swiss: true, palette: ["#0f172a", "#cbd5e1", "#b91c1c"] },
-            { make: "Tissot", model: "PRX Quartz (Mint)", code: "T137.410.11.091.01", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m (10 Bar)", comp: "Date", value: "137000", egg: "Quick-Release: Swap bracelet for strap in seconds.", img: "prxm.png", swiss: true, palette: ["#f8fafc", "#94a3b8", "#10b981"] },
-            { make: "Tissot", model: "PRX Quartz (Blue)", code: "T137.410.11.041.00", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m (10 Bar)", comp: "Date", value: "137000", egg: "70s Heritage: Direct reissue of the 1978 original.", img: "prxb.png", swiss: true, palette: ["#1e293b", "#e2e8f0", "#475569"] },
-            { make: "Tissot", model: "Carson Premium Moonphase", code: "T122.423.11.033.00", cat: "Dress", mov: "Quartz (ETA F05.841)", wr: "50m (5 Bar)", comp: "True Moonphase, Date", value: "165000", egg: "EOL Indicator: Seconds hand jumps 4s when low.", img: "carson.png", swiss: true, palette: ["#000000", "#475569", "#fbbf24"] },            
-            { make: "Tag Heuer", model: "Formula 1 Date", code: "WAZ1118.BA0875", cat: "Sports/Racing", mov: "Quartz", wr: "200m (20 Bar)", comp: "Date", value: "425000", egg: "Racing Extension: Clasp has a hidden fold-out.", img: "tag.png", swiss: true, palette: ["#1e293b", "#ef4444", "#ffffff"] },
-            { make: "Seiko", model: "5 'Specialist'", code: "SRPD76", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m (10 Bar)", comp: "Day, Date, Hacking", value: "141000", egg: "Hacking Seconds: Stop time for exact sync.", img: "76.png", swiss: false, palette: ["#1e1b4b", "#c2410c", "#525252"] },
-            { make: "Seiko", model: "5 'Arabic Dial'", code: "SNK063J5", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m (3 Bar)", comp: "Bilingual Day/Date", value: "85000", egg: "Secret Calendar: Arabic day wheel hidden.", img: "arabic.png", swiss: false, palette: ["#ffffff", "#4b5563", "#fbbf24"] },
-            { make: "G-Shock", model: "CasiOak", code: "GA2100", cat: "Rugged", mov: "Quartz (Digi-Ana)", wr: "100m (10 Bar)", comp: "World Time, 5 Alarms", value: "48000", egg: "Hand Shift: Move hands away from digital screen.", img: "casioak.png", swiss: false, palette: ["#1e293b", "#334155", "#000000"] },
-            { make: "G-Shock", model: "Camo XL", code: "GA100CM-8A", cat: "Rugged", mov: "Quartz (Digi-Ana)", wr: "200m (20 Bar)", comp: "Speed Indicator", value: "52000", egg: "Mach Indicator: Center dial calculates speed.", img: "gshock.png", swiss: false, palette: ["#454739", "#27272a", "#71717a"] },
-            { make: "Casio", model: "Vintage (Black/Gold)", code: "A168WEGB-1B", cat: "Digital Classic", mov: "Quartz", wr: "Splash Proof", comp: "Alarm, Stopwatch", value: "19500", egg: "Authenticity Check: Hold bottom-right for 'CASIo'.", img: "goldv.png", swiss: false, palette: ["#000000", "#fbbf24", "#3f3f46"] },
-            { make: "Casio", model: "Vintage (Gunmetal)", code: "A168WGG-1B", cat: "Digital Classic", mov: "Quartz", wr: "Splash Proof", comp: "Alarm, Stopwatch", value: "18000", egg: "LCD Test: Hold all buttons to light segments.", img: "greyv.png", swiss: false, palette: ["#27272a", "#e2e8f0", "#000000"] },
-            { make: "Casio", model: "Edifice Chronograph", code: "EFV-500L-7AVUEF", cat: "Sports/Casual", mov: "Quartz", wr: "100m (10 Bar)", comp: "Chrono, 24hr Subdial, Date", value: "35000", egg: "24hr Sync: Prevents damage in 'danger zone'.", img: "edifice.png", swiss: false, palette: ["#7c2d12", "#fef3c7", "#1e293b"] },
-            { make: "Fossil", model: "Goodwin Chronograph", code: "FS5415", cat: "Casual/Racing", mov: "Quartz", wr: "50m (5 Bar)", comp: "Flyback Chrono, Date", value: "28000", egg: "Tachymeter: Speed calculation on dial.", img: "goodwin.png", swiss: false, palette: ["#000000", "#e2e8f0", "#991b1b"] },
-            { make: "Fossil", model: "Slimline Minimalist", code: "FS5305", cat: "Casual", mov: "Quartz", wr: "50m (5 Bar)", comp: "Three-Hand, Date", value: "22000", egg: "Ultra-Slim: Slide under dress shirt cuffs.", img: "slimline.png", swiss: false, palette: ["#ffffff", "#1e293b", "#d4d4d8"] }
-        ];
+<script>
+    const watches = [
+        { id: 0, make: "Tissot", model: "PRX Powermatic 80", ref: "T137.407.11.041.00", cat: "Integrated Sports", mov: "Automatic (ETA C07.111)", wr: "100m", comp: "Instantaneous Date, 80-Hour Reserve, Hacking Seconds", bought: 235000, value: 255000, egg: "Waffle dial and Nivachron™ anti-magnetic spring.", img: "prxp.png", palette: ["#0f172a", "#cbd5e1", "#b91c1c"] },
+        { id: 1, make: "Tissot", model: "PRX Quartz (Mint)", ref: "T137.410.11.091.01", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m", comp: "End-of-Life Indicator, Date Display", bought: 130000, value: 137000, egg: "The viral mint dial that redefined modern sports watches.", img: "prxm.png", palette: ["#f8fafc", "#94a3b8", "#10b981"] },
+        { id: 2, make: "Tissot", model: "PRX Quartz (Blue)", ref: "T137.410.11.041.00", cat: "Integrated Sports", mov: "Quartz", wr: "100m", comp: "Sunray Blue Dial, Date", bought: 130000, value: 137000, egg: "Iconic integrated bracelet design from 1978.", img: "prxb.png", palette: ["#1e293b", "#e2e8f0", "#475569"] },
+        { id: 3, make: "Tissot", model: "Carson Moonphase", ref: "T122.423.11.033.00", cat: "Dress", mov: "Quartz (Renata 394)", wr: "50m", comp: "Moonphase Complication, Roman Numerals", bought: 155000, value: 165000, egg: "Features a poetic lunar cycle on a silver leaf dial.", img: "carson.png", palette: ["#000000", "#475569", "#fbbf24"] },
+        { id: 4, make: "Tag Heuer", model: "Formula 1 Date", ref: "WAZ1110.BA0875", cat: "Racing", mov: "Quartz", wr: "200m", comp: "Screw-down Crown, Unidirectional Bezel", bought: 380000, value: 425000, egg: "Professional diving specs combined with racing DNA.", img: "tag.png", palette: ["#1e293b", "#ef4444", "#ffffff"] },
+        { id: 5, make: "Seiko", model: "5 'Specialist'", ref: "SRPD55K1", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m", comp: "Day/Date, Manual Winding, Hacking", bought: 125000, value: 141000, egg: "Robust 4R36 movement visible through the caseback.", img: "76.png", palette: ["#1e1b4b", "#c2410c", "#525252"] },
+        { id: 6, make: "Seiko", model: "5 'Arabic Dial'", ref: "SNKP21J1", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m", comp: "Eastern Arabic Numerals, Day/Date", bought: 65000, value: 85000, egg: "A rare regional masterpiece with huge cult status.", img: "arabic.png", palette: ["#ffffff", "#4b5563", "#fbbf24"] },
+        { id: 7, make: "G-Shock", model: "CasiOak", ref: "GA-2100-1A1", cat: "Rugged", mov: "Module 5611", wr: "200m", comp: "Carbon Core Guard, World Time, Alarms", bought: 42000, value: 48000, egg: "Modern legend with a slim, octagonal profile.", img: "casioak.png", palette: ["#1e293b", "#334155", "#000000"] },
+        { id: 8, make: "G-Shock", model: "Camo XL", ref: "GA-100MM", cat: "Rugged", mov: "Quartz", wr: "200m", comp: "Speed Indicator, 1/1000 sec Chrono", bought: 48000, value: 52000, egg: "Magnetic resistant structure with XL presence.", img: "gshock.png", palette: ["#454739", "#27272a", "#71717a"] },
+        { id: 9, make: "Casio", model: "Vintage (Black/Gold)", ref: "A168WG-9", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "EL Backlight, Stopwatch", bought: 15000, value: 19500, egg: "The absolute gold standard of 80s retro-futurism.", img: "goldv.png", palette: ["#000000", "#fbbf24", "#3f3f46"] },
+        { id: 10, make: "Casio", model: "Vintage (Gunmetal)", ref: "A168WGG-1B", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "Negative Display, Stealth Case", bought: 14000, value: 18000, egg: "Ion-plated gunmetal for a modern tactical look.", img: "greyv.png", palette: ["#27272a", "#e2e8f0", "#000000"] },
+        { id: 11, make: "Casio", model: "Edifice Chrono", ref: "EFR-556DB", cat: "Casual", mov: "Quartz", wr: "100m", comp: "3-Dial Chronograph, Date Display", bought: 28000, value: 35000, egg: "Motorsport-inspired layered dial depth.", img: "edifice.png", palette: ["#7c2d12", "#fef3c7", "#1e293b"] },
+        { id: 12, make: "Fossil", model: "Goodwin Chrono", ref: "FS5412", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Tachymeter, 60-second Chrono", bought: 22000, value: 28000, egg: "Classic racing aesthetics with a domed crystal lens.", img: "goodwin.png", palette: ["#000000", "#e2e8f0", "#991b1b"] },
+        { id: 13, make: "Fossil", model: "Minimalist Slim", ref: "FS5305", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Time-only, Ultra-thin Profile", bought: 18000, value: 22000, egg: "Maximum simplicity in a low-profile stainless case.", img: "slimline.png", palette: ["#ffffff", "#1e293b", "#d4d4d8"] }
+    ];
 
-        gsap.to("#gear-main", { rotation: 360, duration: 25, repeat: -1, ease: "none" });
-        gsap.to("#gear-balance", { rotation: 40, duration: 0.12, repeat: -1, yoyo: true, ease: "power1.inOut" });
+    function renderWatches(data) {
+        const grid = document.getElementById('watch-grid'); grid.innerHTML = '';
+        data.forEach((w) => {
+            const isAuto = w.mov.includes('Automatic');
+            const card = document.createElement('div');
+            card.className = 'watch-card-container'; card.id = `watch-card-${w.id}`;
+            card.innerHTML = `
+                <div class="card-inner" id="card-${w.id}" onclick="handleCardClick(event, ${w.id})">
+                    <div class="card-front glass-card p-10 flex flex-col group">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="bg-white/5 border border-white/10 text-[7px] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest">${w.cat}</span>
+                            <div class="flex gap-2">${w.palette.map(color => `<div class="w-2.5 h-2.5 rounded-full border border-white/20" style="background:${color}"></div>`).join('')}</div>
+                        </div>
+                        <div class="flex-1 flex items-center justify-center py-4"><img src="${w.img}" class="watch-img max-h-56 group-hover:scale-110 transition-all duration-1000" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'"></div>
+                        <div class="border-t border-white/5 pt-8">
+                            <h4 class="text-white/20 text-[8px] uppercase font-black tracking-[0.4em] mb-2">${w.make}</h4>
+                            <h2 class="lux-font text-3xl mb-4 text-white/90 leading-tight">${w.model}</h2>
+                            <div class="flex justify-between items-center text-[8px] mono-font opacity-30 uppercase tracking-widest">
+                                <span>${w.mov.split(' ')[0]} / ${w.wr}</span>
+                                ${isAuto ? `<button onclick="flipCard(event, ${w.id})" class="text-yellow-500 font-black hover:underline z-20">MECHANISM</button>` : '<span>PRECISION</span>'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-back glass-card p-12 flex flex-col items-center">
+                        <div class="perlage"></div>
+                        <p class="text-yellow-500 text-[8px] font-black tracking-[0.5em] mb-12 uppercase relative z-10">Exhibition Caseback</p>
+                        <svg class="w-48 h-48 relative z-10" viewBox="0 0 100 100">
+                            <g id="gears-${w.id}"><circle cx="50" cy="50" r="15" class="gear" /><circle cx="35" cy="40" r="8" class="gear" /><circle cx="65" cy="45" r="10" class="gear" /></g>
+                            <path id="rotor-${w.id}" d="M 50 50 L 50 15 A 35 35 0 0 1 85 50 Z" fill="rgba(251, 191, 36, 0.15)" stroke="var(--gold)" stroke-width="0.5"/>
+                        </svg>
+                        <button onclick="flipCard(event, ${w.id})" class="mt-12 text-[7px] font-black border border-white/10 px-8 py-3 rounded-full hover:bg-white hover:text-black transition-all uppercase relative z-10">Return to Dial</button>
+                    </div>
+                </div>`;
+            grid.appendChild(card);
+            if(isAuto) {
+                gsap.to(`#rotor-${w.id}`, { rotation: 360, duration: 20, repeat: -1, ease: "none" });
+                gsap.to(`#gears-${w.id} circle`, { rotation: (i) => i % 2 ? 360 : -360, duration: 12, repeat: -1, ease: "none" });
+            }
+        });
+        updateStats(data);
+    }
 
-        window.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5) * 40;
-            const y = (e.clientY / window.innerHeight - 0.5) * 40;
-            gsap.to("#blueprint-bg", { x: x * 0.5, y: y * 0.5, duration: 1, ease: "power2.out" });
-            gsap.to("#gear-system", { x: -x, y: -y, duration: 1.5, ease: "power3.out" });
-            
-            document.querySelectorAll('.magnetic-wrap').forEach(btn => {
-                const rect = btn.getBoundingClientRect();
-                const btnX = e.clientX - (rect.left + rect.width/2);
-                const btnY = e.clientY - (rect.top + rect.height/2);
-                if(Math.abs(btnX) < 50 && Math.abs(btnY) < 50) {
-                    gsap.to(btn, { x: btnX * 0.3, y: btnY * 0.3, duration: 0.3 });
+    function handleCardClick(e, id) { if(!e.target.closest('button')) openModal(watches.find(w => w.id === id)); }
+    function flipCard(e, id) { e.stopPropagation(); document.getElementById(`card-${id}`).classList.toggle('is-flipped'); }
+
+    // --- REFINED TOGGLE HANDLER ---
+    function setMode(mode) {
+        document.getElementById('styleMode').value = mode;
+        document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+        
+        if(mode === 'minimalist') document.getElementById('mode-min').classList.add('active');
+        else document.getElementById('mode-con').classList.add('active');
+
+        // Automatically re-run scan if results are currently visible
+        if(document.body.classList.contains('has-match')) {
+            findMatches();
+        }
+    }
+
+    // --- SCAN ENGINE v4.5 ---
+    function findMatches() {
+        const top = document.getElementById('topColor').value;
+        const bottom = document.getElementById('bottomColor').value;
+        const mode = document.getElementById('styleMode').value;
+        
+        const excludedIds = [8, 11, 13];
+        const hexToRgb = h => h.match(/\w\w/g).map(x => parseInt(x, 16));
+        const dist = (c1, c2) => {
+            const [r1, g1, b1] = hexToRgb(c1); const [r2, g2, b2] = hexToRgb(c2);
+            return Math.sqrt(Math.pow((r1-r2)*0.299, 2) + Math.pow((g1-g2)*0.587, 2) + Math.pow((b1-b2)*0.114, 2));
+        };
+
+        let scored = watches
+            .filter(w => !excludedIds.includes(w.id))
+            .map(w => {
+                let dTop = Math.min(...w.palette.map(p => dist(p, top)));
+                let dBottom = Math.min(...w.palette.map(p => dist(p, bottom)));
+                
+                let baseScore;
+                if(mode === 'minimalist') {
+                    baseScore = (dTop + dBottom) / 2;
                 } else {
-                    gsap.to(btn, { x: 0, y: 0, duration: 0.5 });
+                    // Contrast logic: penalize similar colors, reward diversity
+                    baseScore = Math.min(dTop, dBottom) * 0.5 + (Math.abs(dTop - dBottom) * 0.2);
                 }
-            });
 
-            if (document.body.classList.contains('lume-mode')) {
-                gsap.to("#uv-torch", { left: e.clientX, top: e.clientY, duration: 0.1 });
+                if(w.id === 5) {
+                    const [r,g,b] = hexToRgb(top);
+                    if(mode === 'contrast' || (r+g+b)/3 < 100) baseScore -= 15;
+                }
+                return { id: w.id, score: baseScore };
+            })
+            .sort((a, b) => a.score - b.score);
+
+        resetView();
+        document.body.classList.add('has-match');
+        document.getElementById('clearBtn').classList.remove('hidden');
+
+        const perfThreshold = mode === 'minimalist' ? 25 : 40; 
+        const count = Math.floor(Math.random() * 3) + 2; 
+        const finalSelection = scored.slice(0, count);
+
+        finalSelection.forEach((m) => {
+            const el = document.getElementById(`watch-card-${m.id}`);
+            if(el) {
+                if(m.score < perfThreshold) el.classList.add('match-perfect');
+                else el.classList.add('match-suggested');
             }
         });
 
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('real-time-clock').innerText = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            document.getElementById('clock-ms').innerText = "." + String(Math.floor(now.getMilliseconds()/10)).padStart(2,'0');
-            document.getElementById('clock-date').innerText = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-            requestAnimationFrame(updateClock);
+        document.getElementById('match-status').innerText = `CALIBRATION: ${finalSelection.length} PIECES [${mode.toUpperCase()}]`;
+        if(finalSelection.length > 0) {
+            document.getElementById(`watch-card-${finalSelection[0].id}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+    }
 
-        function openModal(w) {
-            const modal = document.getElementById('modal-overlay');
-            const content = document.getElementById('modal-content');
-            
-            document.getElementById('m-make').innerText = w.make;
-            document.getElementById('m-model').innerText = w.model;
-            document.getElementById('m-mov').innerText = w.mov;
-            document.getElementById('m-wr').innerText = w.wr;
-            document.getElementById('m-egg').innerText = w.egg;
-            document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[450px] drop-shadow-2xl" onerror="this.src='https://via.placeholder.com/500?text=${w.model}'">`;
-            
-            const pDots = document.getElementById('m-palette-dots');
-            pDots.innerHTML = w.palette.map(color => `
-                <div class="flex flex-col items-center gap-2">
-                    <div class="swatch-large shadow-lg" style="background: ${color}"></div>
-                    <span class="text-[8px] mono-font opacity-40">${color.toUpperCase()}</span>
-                </div>
-            `).join('');
+    function resetView() { document.body.classList.remove('has-match'); document.getElementById('clearBtn').classList.add('hidden'); document.querySelectorAll('.watch-card-container').forEach(el => el.classList.remove('match-perfect', 'match-suggested')); document.getElementById('match-status').innerText = "Logic: Perceptual Filter"; }
+    function toggleLume() { document.body.classList.toggle('lume-mode'); }
+    function handleSearch() { resetView(); const q = document.getElementById('searchInput').value.toLowerCase(); renderWatches(watches.filter(w => w.model.toLowerCase().includes(q) || w.make.toLowerCase().includes(q))); }
+    function updateStats(data) { const mkt = data.reduce((a, w) => a + w.value, 0); const bgt = data.reduce((a, w) => a + w.bought, 0); document.getElementById('val-counter').innerText = mkt.toLocaleString() + ' LKR'; document.getElementById('roi-stat').innerText = `Portfolio ROI: +${(((mkt-bgt)/bgt)*100).toFixed(1)}%`; }
+    function updateClock() { const now = new Date(); document.getElementById('real-time-clock').innerText = now.toLocaleTimeString('en-US', { hour12: false }); document.getElementById('clock-date').innerText = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(); requestAnimationFrame(updateClock); }
+    function closeModal() { document.getElementById('modal-content').style.opacity = '0'; document.getElementById('modal-content').style.transform = 'scale(0.95)'; setTimeout(() => document.getElementById('modal-overlay').style.display = 'none', 400); }
+    function openModal(w) { document.getElementById('m-make').innerText = w.make; document.getElementById('m-model').innerText = w.model; document.getElementById('m-mov').innerText = w.mov; document.getElementById('m-wr').innerText = w.wr; document.getElementById('m-comp').innerText = w.comp; document.getElementById('m-egg').innerText = w.egg; document.getElementById('m-val').innerText = w.value.toLocaleString() + ' LKR'; document.getElementById('m-bought').innerText = w.bought.toLocaleString() + ' LKR'; document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[400px] drop-shadow-2xl">`; document.getElementById('modal-overlay').style.display = 'flex'; setTimeout(() => { document.getElementById('modal-content').style.opacity = '1'; document.getElementById('modal-content').style.transform = 'scale(1)'; }, 10); }
 
-            modal.style.display = 'flex';
-            gsap.to(modal, { opacity: 1, duration: 0.5 });
-            gsap.to(content, { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.8)" });
-        }
+    window.onload = () => {
+        const lp = 2551443; const phase = ((new Date().getTime() - new Date(1970, 0, 7, 20, 35, 0).getTime()) / 1000) % lp;
+        document.getElementById('moon-mask').style.transform = `translateX(${(phase/lp < 0.5) ? (phase/lp)*200 : (1-(phase/lp))*200}%)`;
+        document.getElementById('moon-label').innerText = ["NEW MOON", "WAXING CRESCENT", "FIRST QUARTER", "WAXING GIBBOUS", "FULL MOON", "WANING GIBBOUS", "LAST QUARTER", "WANING CRESCENT"][Math.floor((phase/lp) * 8)];
+        renderWatches(watches); updateClock();
+    };
 
-        function closeModal() {
-            gsap.to("#modal-content", { scale: 0.9, opacity: 0, duration: 0.3 });
-            gsap.to("#modal-overlay", { opacity: 0, duration: 0.4, onComplete: () => document.getElementById('modal-overlay').style.display = 'none' });
-        }
-
-        function renderWatches(data) {
-            const grid = document.getElementById('watch-grid');
-            grid.innerHTML = '';
-            data.forEach((w, i) => {
-                const card = document.createElement('div');
-                card.className = 'glass-card rounded-[2.5rem] p-10 flex flex-col h-full opacity-0 translate-y-20 watch-card overflow-hidden group';
-                card.innerHTML = `
-                    <div class="flex justify-between items-center mb-8 relative z-10">
-                        <span class="category-tag tag-${w.cat.toLowerCase().replace('/', '-').replace(' ', '-')}">${w.cat}</span>
-                        <div class="w-2 h-2 rounded-full ${w.mov.includes('Automatic') ? 'bg-yellow-500 animate-pulse' : 'bg-white/20'}"></div>
-                    </div>
-                    <div class="img-container mb-10 relative z-10">
-                        <img src="${w.img}" class="watch-img group-hover:scale-110 transition-transform duration-700" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'">
-                    </div>
-                    <div class="relative z-10 flex flex-col h-full">
-                        <h4 class="text-white/20 text-[9px] uppercase font-black tracking-[0.3em] mb-2">${w.make}</h4>
-                        <h2 class="lux-font text-3xl mb-4 group-hover:text-yellow-500 transition-colors">${w.model}</h2>
-                        
-                        <div class="flex gap-2 mb-6">
-                            ${w.palette.map(color => `<div class="swatch-pip" style="background: ${color}"></div>`).join('')}
-                        </div>
-
-                        <div class="mt-auto pt-8 border-t border-white/5 flex justify-between items-center">
-                            <span class="text-[10px] mono-font opacity-40">${w.wr}</span>
-                            <div class="text-right">
-                                <span class="text-[8px] opacity-20 block mb-1 uppercase">Value</span>
-                                <span class="text-yellow-500 mono-font font-black">${parseInt(w.value).toLocaleString()} LKR</span>
-                            </div>
-                        </div>
-                    </div>`;
-
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) / rect.width - 0.5;
-                    const y = (e.clientY - rect.top) / rect.height - 0.5;
-                    gsap.to(card, { rotationY: x * 15, rotationX: -y * 15, transformPerspective: 1000, duration: 0.5 });
-                });
-                
-                card.addEventListener('mouseleave', () => {
-                    gsap.to(card, { rotationX: 0, rotationY: 0, duration: 1, ease: "elastic.out(1, 0.3)" });
-                });
-
-                card.onclick = () => openModal(w);
-                grid.appendChild(card);
-            });
-            updateAnalytics(data);
-            gsap.to(".watch-card", { opacity: 1, y: 0, duration: 1.2, stagger: 0.1, ease: "power4.out" });
-        }
-
-        function updateAnalytics(data) {
-            const total = data.reduce((acc, w) => acc + parseInt(w.value), 0);
-            const autoCount = data.filter(w => w.mov.includes('Automatic')).length;
-            const swissCount = data.filter(w => w.swiss).length;
-            const swissRatio = data.length > 0 ? Math.round((swissCount / data.length) * 100) : 0;
-            
-            gsap.to("#val-counter", { innerText: total, duration: 2.5, snap: { innerText: 1 }, modifiers: { innerText: (v) => parseInt(v).toLocaleString() + ' LKR' } });
-            document.getElementById('asset-count').innerText = `${data.length} ARCHIVED UNITS`;
-            document.getElementById('swiss-perc').innerText = `${swissRatio}%`;
-            gsap.to("#swiss-bar", { width: `${swissRatio}%`, duration: 2, ease: "expo.out" });
-
-            // Re-sync visualizer speed based on active mechanical count
-            const bars = document.querySelectorAll('.beat-bar');
-            bars.forEach(bar => {
-                gsap.to(bar, { 
-                    scaleY: 1 + Math.random() * 8, 
-                    duration: autoCount > 0 ? 0.15 : 1.5, 
-                    repeat: -1, 
-                    yoyo: true, 
-                    ease: "sine.inOut" 
-                });
-            });
-        }
-
-        function toggleLume() { document.body.classList.toggle('lume-mode'); }
-        function handleSearch() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            renderWatches(watches.filter(w => w.model.toLowerCase().includes(q) || w.make.toLowerCase().includes(q)));
-        }
-        function filterWatches(f) { renderWatches(f === 'All' ? watches : watches.filter(w => w.mov.includes(f))); }
-
-        window.onload = () => {
-            const container = document.getElementById('beat-visualizer');
-            for(let i=0; i<20; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'beat-bar flex-1';
-                container.appendChild(bar);
-            }
-            updateClock();
-            renderWatches(watches);
-            
-            const lp = 2551443; 
-            const now = new Date();
-            const phase = ((now.getTime() - new Date(1970, 0, 7, 20, 35, 0).getTime()) / 1000) % lp;
-            const phasePct = phase / lp;
-            document.getElementById('moon-mask').style.transform = `translateX(${(phasePct < 0.5) ? phasePct * 200 : (1 - phasePct) * 200}%)`;
-            const phases = ["NEW MOON", "WAXING CRESCENT", "FIRST QUARTER", "WAXING GIBBOUS", "FULL MOON", "WANING GIBBOUS", "LAST QUARTER", "WANING CRESCENT"];
-            document.getElementById('moon-label').innerText = phases[Math.floor(phasePct * 8)];
-        };
-    </script>
+    window.addEventListener('mousemove', (e) => { if (document.body.classList.contains('lume-mode')) gsap.to("#uv-torch", { left: e.clientX, top: e.clientY, duration: 0.1 }); });
+</script>
 </body>
 </html>
