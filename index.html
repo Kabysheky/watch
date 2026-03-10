@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kash Watch Vault</title>
+    <title>KK's Watch Vault</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="My App">
@@ -14,10 +14,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #fbbf24; --bg: #050505; --lume: #00ffff; --glass: rgba(255, 255, 255, 0.03); }
-        body { background: var(--bg); font-family: 'Inter', sans-serif; color: #e2e8f0; scroll-behavior: smooth; overflow-x: hidden; transition: background 0.5s ease; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; color: #e2e8f0; scroll-behavior: smooth; overflow-x: hidden; }
         .lux-font { font-family: 'Playfair Display', serif; }
         .mono-font { font-family: 'Space Grotesk', sans-serif; }
         
+        /* Shutter Loader Styles */
+        #loader-wrapper { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .shutter-container { position: absolute; inset: 0; display: flex; pointer-events: none; }
+        .shutter-slat { flex: 1; background: #000; height: 100%; border-right: 1px solid rgba(255,255,255,0.02); }
+        .loader-content { z-index: 10000; position: relative; }
+        .progress-ring__circle { stroke: var(--gold); stroke-dasharray: 565.48; stroke-dashoffset: 565.48; transition: stroke-dashoffset 0.1s linear; }
+
         .glass-card { background: var(--glass); backdrop-filter: blur(50px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .watch-card-container { perspective: 2000px; height: 620px; transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
         .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
@@ -44,11 +51,33 @@
     </style>
 </head>
 <body class="pb-20">
+
+    <div id="loader-wrapper">
+        <div class="shutter-container">
+            <div class="shutter-slat"></div>
+            <div class="shutter-slat"></div>
+            <div class="shutter-slat"></div>
+            <div class="shutter-slat"></div>
+            <div class="shutter-slat"></div>
+            <div class="shutter-slat"></div>
+        </div>
+        <div class="loader-content">
+            <svg class="w-64 h-64 -rotate-90" viewBox="0 0 200 200">
+                <circle class="text-white/5" stroke="currentColor" stroke-width="1" fill="transparent" r="90" cx="100" cy="100"/>
+                <circle class="progress-ring__circle" id="loading-circle" stroke-width="1.5" fill="transparent" r="90" cx="100" cy="100"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <h2 class="lux-font text-2xl tracking-[0.2em] text-yellow-500 mb-1">KK VAULT</h2>
+                <p class="mono-font text-[7px] text-white/30 tracking-[0.5em] uppercase" id="load-perc">CALIBRATING 0%</p>
+            </div>
+        </div>
+    </div>
+
     <div id="uv-torch"></div>
     <nav class="sticky top-0 z-50 px-8 py-5 bg-black/90 backdrop-blur-2xl border-b border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
         <div class="flex items-baseline gap-4">
-            <h1 class="lux-font text-4xl tracking-tighter text-yellow-500 uppercase">Kabyshek's</h1>
-            <span class="text-[7px] uppercase tracking-[0.8em] text-white/20 font-extrabold">Personal Caliber Vault</span>
+            <h1 class="lux-font text-4xl tracking-tighter text-yellow-500 uppercase">Kabyshek's </h1>
+            <span class="text-[7px] uppercase tracking-[0.8em] text-white/20 font-extrabold">Vault Caliber</span>
         </div>
         <div class="flex items-center gap-4">
             <button class="bg-white/5 border border-white/10 text-[8px] tracking-[2px] py-2 px-6 rounded-lg hover:bg-yellow-500 hover:text-black transition-all" onclick="toggleLume()">LUME MODE</button>
@@ -75,7 +104,7 @@
                 <div class="h-12 w-px bg-white/10"></div>
                 <div class="flex-1 text-center">
                     <button onclick="findMatches()" class="w-full py-4 rounded-xl bg-yellow-500 text-black text-[9px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all active:scale-95">Scan Collection</button>
-                    <p id="match-status" class="text-[8px] mt-3 font-bold text-white/30 uppercase tracking-widest">Perceptual Filter</p>
+                    <p id="match-status" class="text-[8px] mt-3 font-bold text-white/30 uppercase tracking-widest">Logic: Perceptual Filter</p>
                 </div>
             </div>
         </div>
@@ -98,6 +127,7 @@
             <div class="lg:col-span-6 flex flex-col justify-center">
                 <span id="m-make" class="text-yellow-500 text-[10px] tracking-[0.6em] font-black uppercase mb-2"></span>
                 <h2 id="m-model" class="lux-font text-5xl mb-2 text-white"></h2>
+                <p id="m-ref" class="mono-font text-white/40 text-[10px] tracking-widest mb-8 uppercase"></p>
                 <div class="grid grid-cols-2 gap-4 mb-8">
                     <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Movement</span><p id="m-mov" class="text-xs font-bold"></p></div>
                     <div class="p-4 bg-white/5 rounded-2xl border border-white/5"><span class="text-[7px] opacity-40 block mb-1 uppercase font-black tracking-widest">Resistance</span><p id="m-wr" class="text-xs font-bold"></p></div>
@@ -149,15 +179,14 @@
                         <div class="flex-1 flex items-center justify-center py-4"><img src="${w.img}" class="watch-img max-h-56 group-hover:scale-110 transition-all duration-1000" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'"></div>
                         <div class="border-t border-white/5 pt-8">
                             <h4 class="text-white/20 text-[8px] uppercase font-black tracking-[0.4em] mb-2">${w.make}</h4>
-                            <h2 class="lux-font text-3xl mb-4 text-white/90 leading-tight">${w.model}</h2>
+                            <h2 class="lux-font text-3xl mb-1 text-white/90 leading-tight">${w.model}</h2>
+                            <p class="mono-font text-[7px] text-white/20 tracking-widest uppercase mb-4">${w.ref}</p>
                             <div class="flex justify-between items-center text-[8px] mono-font opacity-30 uppercase tracking-widest">
                                 <span>${w.mov.split(' ')[0]} / ${w.wr}</span>
-                                ${isAuto ? `<button onclick="flipCard(event, ${w.id})" class="text-yellow-500 font-black hover:underline z-20">MECHANISM</button>` : '<span>PRECISION</span>'}
                             </div>
                         </div>
                     </div>
                     <div class="card-back glass-card p-12 flex flex-col items-center">
-                        <div class="perlage"></div>
                         <p class="text-yellow-500 text-[8px] font-black tracking-[0.5em] mb-12 uppercase relative z-10">Exhibition Caseback</p>
                         <svg class="w-48 h-48 relative z-10" viewBox="0 0 100 100">
                             <g id="gears-${w.id}"><circle cx="50" cy="50" r="15" class="gear" /><circle cx="35" cy="40" r="8" class="gear" /><circle cx="65" cy="45" r="10" class="gear" /></g>
@@ -175,102 +204,153 @@
         updateStats(data);
     }
 
-    function handleCardClick(e, id) { if(!e.target.closest('button')) openModal(watches.find(w => w.id === id)); }
-    function flipCard(e, id) { e.stopPropagation(); document.getElementById(`card-${id}`).classList.toggle('is-flipped'); }
-
-    // --- REFINED TOGGLE HANDLER ---
-    function setMode(mode) {
-        document.getElementById('styleMode').value = mode;
-        document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-        
-        if(mode === 'minimalist') document.getElementById('mode-min').classList.add('active');
-        else document.getElementById('mode-con').classList.add('active');
-
-        // Automatically re-run scan if results are currently visible
-        if(document.body.classList.contains('has-match')) {
-            findMatches();
-        }
+    function exitShutter() {
+        const tl = gsap.timeline();
+        tl.to(".loader-content", { duration: 0.5, opacity: 0, y: -20, ease: "power2.in" })
+          .to(".shutter-slat", {
+            duration: 1,
+            height: 0,
+            stagger: { each: 0.1, from: "center" },
+            ease: "expo.inOut"
+          })
+          .to("#loader-wrapper", { display: "none" })
+          .from(".watch-card-container", {
+            duration: 0.8,
+            y: 40,
+            opacity: 0,
+            stagger: 0.05,
+            ease: "back.out(1.7)",
+            clearProps: "all"
+          }, "-=0.5");
     }
 
-    // --- SCAN ENGINE v4.5 ---
     function findMatches() {
         const top = document.getElementById('topColor').value;
         const bottom = document.getElementById('bottomColor').value;
         const mode = document.getElementById('styleMode').value;
-        
-        const excludedIds = [8, 11, 13];
+        const excludedIds = [8, 9, 11, 13];
+
         const hexToRgb = h => h.match(/\w\w/g).map(x => parseInt(x, 16));
-        const dist = (c1, c2) => {
-            const [r1, g1, b1] = hexToRgb(c1); const [r2, g2, b2] = hexToRgb(c2);
-            return Math.sqrt(Math.pow((r1-r2)*0.299, 2) + Math.pow((g1-g2)*0.587, 2) + Math.pow((b1-b2)*0.114, 2));
+        const getLuminance = hex => {
+            const [r, g, b] = hexToRgb(hex);
+            return (0.299 * r + 0.587 * g + 0.114 * b);
         };
 
-        let scored = watches
-            .filter(w => !excludedIds.includes(w.id))
-            .map(w => {
-                let dTop = Math.min(...w.palette.map(p => dist(p, top)));
-                let dBottom = Math.min(...w.palette.map(p => dist(p, bottom)));
-                
-                let baseScore;
-                if(mode === 'minimalist') {
-                    baseScore = (dTop + dBottom) / 2;
-                } else {
-                    // Contrast logic: penalize similar colors, reward diversity
-                    baseScore = Math.min(dTop, dBottom) * 0.5 + (Math.abs(dTop - dBottom) * 0.2);
-                }
+        const dist = (c1, c2) => {
+            const [r1, g1, b1] = hexToRgb(c1); 
+            const [r2, g2, b2] = hexToRgb(c2);
+            return Math.sqrt(Math.pow((r1-r2)*0.30, 2) + Math.pow((g1-g2)*0.59, 2) + Math.pow((b1-b2)*0.11, 2));
+        };
 
-                if(w.id === 5) {
-                    const [r,g,b] = hexToRgb(top);
-                    if(mode === 'contrast' || (r+g+b)/3 < 100) baseScore -= 15;
-                }
-                return { id: w.id, score: baseScore };
-            })
-            .sort((a, b) => a.score - b.score);
+        let eligible = watches.filter(w => !excludedIds.includes(w.id));
+        let scored = eligible.map(w => {
+            let dTop = Math.min(...w.palette.map(p => dist(p, top)));
+            let dBottom = Math.min(...w.palette.map(p => dist(p, bottom)));
+            let lumTop = getLuminance(top);
+            let watchLum = getLuminance(w.palette[0]);
+            let score = 100;
+
+            if (mode === 'minimalist') {
+                score = (dTop * 0.7) + (dBottom * 0.3);
+            } else {
+                let lumGap = Math.abs(watchLum - lumTop);
+                score = 200 - lumGap + (dBottom * 0.1);
+                if (w.id === 6 || w.id === 1) score -= 40;
+            }
+            return { id: w.id, score: score };
+        }).sort((a, b) => a.score - b.score);
 
         resetView();
         document.body.classList.add('has-match');
         document.getElementById('clearBtn').classList.remove('hidden');
 
-        const perfThreshold = mode === 'minimalist' ? 25 : 40; 
-        const count = Math.floor(Math.random() * 3) + 2; 
-        const finalSelection = scored.slice(0, count);
+        let finalSelection = scored.slice(0, 3);
+        const hasBlueQuartz = finalSelection.some(m => m.id === 2);
 
-        finalSelection.forEach((m) => {
+        if (hasBlueQuartz && !finalSelection.some(m => m.id === 0)) {
+            finalSelection.push({ id: 0, score: -1 });
+            finalSelection.sort((a, b) => a.score - b.score);
+        }
+
+        finalSelection.forEach((m, index) => {
             const el = document.getElementById(`watch-card-${m.id}`);
             if(el) {
-                if(m.score < perfThreshold) el.classList.add('match-perfect');
+                if(index === 0 || (hasBlueQuartz && m.id === 0)) el.classList.add('match-perfect');
                 else el.classList.add('match-suggested');
             }
         });
 
-        document.getElementById('match-status').innerText = `CALIBRATION: ${finalSelection.length} PIECES [${mode.toUpperCase()}]`;
-        if(finalSelection.length > 0) {
-            document.getElementById(`watch-card-${finalSelection[0].id}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        document.getElementById('match-status').innerText = `LOGIC: ${mode.toUpperCase()} MODE [PRX SYNC]`;
+        const targetId = (hasBlueQuartz) ? 0 : finalSelection[0].id;
+        document.getElementById(`watch-card-${targetId}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    function handleCardClick(e, id) { if(!e.target.closest('button')) openModal(watches.find(w => w.id === id)); }
+    function flipCard(e, id) { e.stopPropagation(); document.getElementById(`card-${id}`).classList.toggle('is-flipped'); }
+    function setMode(mode) {
+        document.getElementById('styleMode').value = mode;
+        document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(mode === 'minimalist' ? 'mode-min' : 'mode-con').classList.add('active');
+        if(document.body.classList.contains('has-match')) findMatches();
+    }
     function resetView() { document.body.classList.remove('has-match'); document.getElementById('clearBtn').classList.add('hidden'); document.querySelectorAll('.watch-card-container').forEach(el => el.classList.remove('match-perfect', 'match-suggested')); document.getElementById('match-status').innerText = "Logic: Perceptual Filter"; }
     function toggleLume() { document.body.classList.toggle('lume-mode'); }
     function handleSearch() { resetView(); const q = document.getElementById('searchInput').value.toLowerCase(); renderWatches(watches.filter(w => w.model.toLowerCase().includes(q) || w.make.toLowerCase().includes(q))); }
-    function updateStats(data) { const mkt = data.reduce((a, w) => a + w.value, 0); const bgt = data.reduce((a, w) => a + w.bought, 0); document.getElementById('val-counter').innerText = mkt.toLocaleString() + ' LKR'; document.getElementById('roi-stat').innerText = `Portfolio ROI: +${(((mkt-bgt)/bgt)*100).toFixed(1)}%`; }
-    function updateClock() { const now = new Date(); document.getElementById('real-time-clock').innerText = now.toLocaleTimeString('en-US', { hour12: false }); document.getElementById('clock-date').innerText = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(); requestAnimationFrame(updateClock); }
-    function closeModal() { document.getElementById('modal-content').style.opacity = '0'; document.getElementById('modal-content').style.transform = 'scale(0.95)'; setTimeout(() => document.getElementById('modal-overlay').style.display = 'none', 400); }
-    function openModal(w) { document.getElementById('m-make').innerText = w.make; document.getElementById('m-model').innerText = w.model; document.getElementById('m-mov').innerText = w.mov; document.getElementById('m-wr').innerText = w.wr; document.getElementById('m-comp').innerText = w.comp; document.getElementById('m-egg').innerText = w.egg; document.getElementById('m-val').innerText = w.value.toLocaleString() + ' LKR'; document.getElementById('m-bought').innerText = w.bought.toLocaleString() + ' LKR'; document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[400px] drop-shadow-2xl">`; document.getElementById('modal-overlay').style.display = 'flex'; setTimeout(() => { document.getElementById('modal-content').style.opacity = '1'; document.getElementById('modal-content').style.transform = 'scale(1)'; }, 10); }
+    function updateStats(data) { 
+        const mkt = data.reduce((a, w) => a + w.value, 0); 
+        const bgt = data.reduce((a, w) => a + w.bought, 0); 
+        document.getElementById('val-counter').innerText = mkt.toLocaleString() + ' LKR'; 
+        document.getElementById('roi-stat').innerText = `Portfolio ROI: +${(((mkt-bgt)/bgt)*100).toFixed(1)}%`; 
+    }
+    function updateClock() { 
+        const now = new Date(); 
+        document.getElementById('real-time-clock').innerText = now.toLocaleTimeString('en-US', { hour12: false }); 
+        document.getElementById('clock-date').innerText = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(); 
+        requestAnimationFrame(updateClock); 
+    }
+    function closeModal() { 
+        gsap.to("#modal-content", { opacity: 0, scale: 0.95, duration: 0.4, onComplete: () => document.getElementById('modal-overlay').style.display = 'none' }); 
+    }
+    function openModal(w) { 
+        document.getElementById('m-make').innerText = w.make; 
+        document.getElementById('m-model').innerText = w.model; 
+        document.getElementById('m-ref').innerText = w.ref; 
+        document.getElementById('m-mov').innerText = w.mov; 
+        document.getElementById('m-wr').innerText = w.wr; 
+        document.getElementById('m-comp').innerText = w.comp; 
+        document.getElementById('m-egg').innerText = w.egg; 
+        document.getElementById('m-val').innerText = w.value.toLocaleString() + ' LKR'; 
+        document.getElementById('m-bought').innerText = w.bought.toLocaleString() + ' LKR'; 
+        document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[400px] drop-shadow-2xl">`; 
+        document.getElementById('modal-overlay').style.display = 'flex'; 
+        gsap.to("#modal-content", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.2)" }); 
+    }
 
     window.onload = () => {
         const lp = 2551443; const phase = ((new Date().getTime() - new Date(1970, 0, 7, 20, 35, 0).getTime()) / 1000) % lp;
         document.getElementById('moon-mask').style.transform = `translateX(${(phase/lp < 0.5) ? (phase/lp)*200 : (1-(phase/lp))*200}%)`;
         document.getElementById('moon-label').innerText = ["NEW MOON", "WAXING CRESCENT", "FIRST QUARTER", "WAXING GIBBOUS", "FULL MOON", "WANING GIBBOUS", "LAST QUARTER", "WANING CRESCENT"][Math.floor((phase/lp) * 8)];
-        renderWatches(watches); updateClock();
+        renderWatches(watches); 
+        updateClock();
+
+        let progress = 0;
+        const circle = document.getElementById('loading-circle');
+        const circumference = 2 * Math.PI * 90;
+        const percText = document.getElementById('load-perc');
+
+        const loadInterval = setInterval(() => {
+            progress += Math.random() * 12;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(loadInterval);
+                setTimeout(exitShutter, 400);
+            }
+            circle.style.strokeDashoffset = circumference - (progress / 100 * circumference);
+            percText.innerText = `CALIBRATING ${Math.floor(progress)}%`;
+        }, 100);
     };
 
     window.addEventListener('mousemove', (e) => { if (document.body.classList.contains('lume-mode')) gsap.to("#uv-torch", { left: e.clientX, top: e.clientY, duration: 0.1 }); });
 </script>
 </body>
 </html>
-
-
-
-
-
-
