@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ba15fc; --bg: #050505; --lume: #00ffff; --glass: rgba(255, 255, 255, 0.03); }
+        :root { --gold: #ba15fc; --bg: #050505; --lume: #00ffff; --glass: rgba(255, 255, 255, 0.03); --accent: #0ABAB5; }
         body { background: var(--bg); font-family: 'Inter', sans-serif; color: #e2e8f0; scroll-behavior: smooth; overflow-x: hidden; }
         .lux-font { font-family: 'Playfair Display', serif; }
         .mono-font { font-family: 'Space Grotesk', sans-serif; }
@@ -81,36 +81,38 @@
         </div>
     </nav>
 
-    <header class="max-w-[1400px] mx-auto px-8 pt-10 grid grid-cols-1 md:grid-cols-12 gap-6">
-        <div class="md:col-span-5 p-8 rounded-[2.5rem] glass-card border-t-2 border-t-yellow-500/30">
-            <div class="flex justify-between items-center mb-6">
-                <p class="text-[8px] uppercase opacity-40 font-black tracking-[0.3em]">Style Engine Optimization</p>
-                <div class="toggle-pill">
-                    <button id="mode-min" class="toggle-btn active" onclick="setMode('minimalist')">MINIMALIST</button>
-                    <button id="mode-con" class="toggle-btn" onclick="setMode('contrast')">CONTRAST</button>
+    <header class="max-w-[1400px] mx-auto px-8 pt-10">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div class="md:col-span-5 p-8 rounded-[2.5rem] glass-card border-t-2 border-t-yellow-500/30">
+                <div class="flex justify-between items-center mb-6">
+                    <p class="text-[8px] uppercase opacity-40 font-black tracking-[0.3em]">Style Engine Optimization</p>
+                    <div class="toggle-pill">
+                        <button id="mode-min" class="toggle-btn active" onclick="setMode('minimalist')">MINIMALIST</button>
+                        <button id="mode-con" class="toggle-btn" onclick="setMode('contrast')">CONTRAST</button>
+                    </div>
+                    <input type="hidden" id="styleMode" value="minimalist">
                 </div>
-                <input type="hidden" id="styleMode" value="minimalist">
+                <div class="flex items-center gap-8 justify-center">
+                    <div class="flex gap-4">
+                        <div class="text-center"><input type="color" id="topColor" value="#ffffff"><p class="text-[7px] font-black mt-2 opacity-30">TOP</p></div>
+                        <div class="text-center"><input type="color" id="bottomColor" value="#1a1a1a"><p class="text-[7px] font-black mt-2 opacity-30">BOTTOM</p></div>
+                    </div>
+                    <div class="h-12 w-px bg-white/10"></div>
+                    <div class="flex-1 text-center">
+                        <button onclick="findMatches()" class="w-full py-4 rounded-xl bg-[#0ABAB5] text-black text-[9px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all active:scale-95">Scan Collection</button>
+                        <p id="match-status" class="text-[8px] mt-3 font-bold text-white/30 uppercase tracking-widest">Logic: Perceptual Filter</p>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-8 justify-center">
-                <div class="flex gap-4">
-                    <div class="text-center"><input type="color" id="topColor" value="#ffffff"><p class="text-[7px] font-black mt-2 opacity-30">TOP</p></div>
-                    <div class="text-center"><input type="color" id="bottomColor" value="#1a1a1a"><p class="text-[7px] font-black mt-2 opacity-30">BOTTOM</p></div>
-                </div>
-                <div class="h-12 w-px bg-white/10"></div>
-                <div class="flex-1 text-center">
-                    <button onclick="findMatches()" class="w-full py-4 rounded-xl bg-[#0ABAB5] text-black text-[9px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all active:scale-95">Scan Collection</button>
-                    <p id="match-status" class="text-[8px] mt-3 font-bold text-white/30 uppercase tracking-widest">Logic: Perceptual Filter</p>
-                </div>
+            <div class="md:col-span-3 p-8 rounded-[2.5rem] glass-card flex flex-col justify-center text-center">
+                <p class="text-[8px] uppercase opacity-40 font-black tracking-[0.3em] mb-2">Portfolio Valuation</p>
+                <h3 class="text-3xl font-bold mono-font text-yellow-500" id="val-counter">0 LKR</h3>
+                <p class="text-[9px] text-green-400 mt-2 font-bold tracking-widest" id="roi-stat">---</p>
             </div>
-        </div>
-        <div class="md:col-span-3 p-8 rounded-[2.5rem] glass-card flex flex-col justify-center text-center">
-            <p class="text-[8px] uppercase opacity-40 font-black tracking-[0.3em] mb-2">Portfolio Valuation</p>
-            <h3 class="text-3xl font-bold mono-font text-yellow-500" id="val-counter">0 LKR</h3>
-            <p class="text-[9px] text-green-400 mt-2 font-bold tracking-widest" id="roi-stat">---</p>
-        </div>
-        <div class="md:col-span-4 p-8 rounded-[2.5rem] glass-card flex justify-between items-center">
-            <div class="flex items-center gap-4"><div class="relative w-12 h-12 bg-black rounded-full border border-white/10 overflow-hidden"><div id="moon-disk" class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-8 bg-gradient-to-tr from-yellow-100 to-yellow-500 rounded-full blur-[1px]"></div></div><div id="moon-mask" class="absolute inset-0 bg-black translate-x-0 transition-transform duration-1000"></div></div><div><p class="text-[7px] opacity-40 font-black tracking-widest uppercase">Moonphase</p><p id="moon-label" class="text-[10px] font-bold mono-font">---</p></div></div>
-            <div class="text-right"><h3 class="text-3xl font-bold mono-font leading-none mb-1" id="real-time-clock">00:00:00</h3><p id="clock-date" class="text-[8px] opacity-30 font-black uppercase tracking-[0.2em]">---</p></div>
+            <div class="md:col-span-4 p-8 rounded-[2.5rem] glass-card flex justify-between items-center">
+                <div class="flex items-center gap-4"><div class="relative w-12 h-12 bg-black rounded-full border border-white/10 overflow-hidden"><div id="moon-disk" class="absolute inset-0 flex items-center justify-center"><div class="w-8 h-8 bg-gradient-to-tr from-yellow-100 to-yellow-500 rounded-full blur-[1px]"></div></div><div id="moon-mask" class="absolute inset-0 bg-black translate-x-0 transition-transform duration-1000"></div></div><div><p class="text-[7px] opacity-40 font-black tracking-widest uppercase">Moonphase</p><p id="moon-label" class="text-[10px] font-bold mono-font">---</p></div></div>
+                <div class="text-right"><h3 class="text-3xl font-bold mono-font leading-none mb-1" id="real-time-clock">00:00:00</h3><p id="clock-date" class="text-[8px] opacity-30 font-black uppercase tracking-[0.2em]">---</p></div>
+            </div>
         </div>
     </header>
 
@@ -156,9 +158,18 @@
         { id: 8, make: "G-Shock", model: "Camo XL", ref: "GA-100MM", size: "51.2mm", cat: "Rugged", mov: "Quartz", wr: "200m", comp: "Speed Indicator, 1/1000 sec Chrono", bought: 48000, value: 52000, egg: "Magnetic resistant structure with XL presence.", img: "gshock.png", palette: ["#454739", "#27272a", "#71717a"] },
         { id: 9, make: "Casio", model: "Vintage (Black/Gold)", ref: "A168WG-9", size: "36.3mm", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "EL Backlight, Stopwatch", bought: 15000, value: 19500, egg: "The absolute gold standard of 80s retro-futurism.", img: "goldv.png", palette: ["#000000", "#fbbf24", "#3f3f46"] },
         { id: 10, make: "Casio", model: "Vintage (Gunmetal)", ref: "A168WGG-1B", size: "36.3mm", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "Negative Display, Stealth Case", bought: 14000, value: 18000, egg: "Ion-plated gunmetal for a modern tactical look.", img: "greyv.png", palette: ["#27272a", "#e2e8f0", "#000000"] },
-        { id: 11, make: "Casio", model: "Edifice Chrono", ref: "EFR-556DB", size: "48.7mm", cat: "Casual", mov: "Quartz", wr: "100m", comp: "3-Dial Chronograph, Date Display", bought: 28000, value: 35000, egg: "Motorsport-inspired layered dial depth.", img: "edifice.png", palette: ["#7c2d12", "#fef3c7", "#1e293b"] },
+        { id: 11, make: "Casio", model: "Edifice Chrono", ref: "EFV-500L-7AV", size: "48.7mm", cat: "Casual", mov: "Quartz", wr: "100m", comp: "3-Dial Chronograph, Date Display", bought: 28000, value: 35000, egg: "Motorsport-inspired layered dial depth.", img: "edifice.png", palette: ["#7c2d12", "#fef3c7", "#1e293b"] },
         { id: 12, make: "Fossil", model: "Goodwin Chrono", ref: "FS5412", size: "44mm", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Tachymeter, 60-second Chrono", bought: 22000, value: 28000, egg: "Classic racing aesthetics with a domed crystal lens.", img: "goodwin.png", palette: ["#000000", "#e2e8f0", "#991b1b"] },
         { id: 13, make: "Fossil", model: "Minimalist Slim", ref: "FS5305", size: "44mm", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Time-only, Ultra-thin Profile", bought: 18000, value: 22000, egg: "Maximum simplicity in a low-profile stainless case.", img: "slimline.png", palette: ["#ffffff", "#1e293b", "#d4d4d8"] }
+    ];
+
+    const shoes = [
+        { name: "Jordan 1 Retro High UNC Toe", palette: ["#75ADED", "#000000", "#FFFFFF"] },
+        { name: "AJ1 Mid University Blue/Black", palette: ["#75ADED", "#000000"] },
+        { name: "AJ1 Low SE Craft Dark Smoke Grey", palette: ["#27272a", "#991b1b"] },
+        { name: "AJ1 Low Medium Olive", palette: ["#556B2F", "#FFFFFF", "#000000"] },
+        { name: "Air Force 1 High Tops White", palette: ["#FFFFFF", "#F3F4F6"] },
+        { name: "Birkenstock Arizona Brown", palette: ["#543b29", "#d2b48c"] }
     ];
 
     function renderWatches(data) {
@@ -203,6 +214,69 @@
         updateStats(data);
     }
 
+    function findMatches() {
+        const top = document.getElementById('topColor').value;
+        const bottom = document.getElementById('bottomColor').value;
+        const mode = document.getElementById('styleMode').value;
+        const excludedIds = [8, 9, 11, 13];
+
+        const hexToRgb = h => h.match(/\w\w/g).map(x => parseInt(x, 16));
+        const dist = (c1, c2) => {
+            const [r1, g1, b1] = hexToRgb(c1); 
+            const [r2, g2, b2] = hexToRgb(c2);
+            return Math.sqrt(Math.pow((r1-r2)*0.30, 2) + Math.pow((g1-g2)*0.59, 2) + Math.pow((b1-b2)*0.11, 2));
+        };
+
+        // --- SHOE LOGIC ---
+        let bestShoe = shoes[5]; // Default Birks
+        let minShoeDist = Infinity;
+        shoes.forEach(s => {
+            let d = Math.min(...s.palette.map(p => dist(p, bottom)));
+            if (d < minShoeDist) { minShoeDist = d; bestShoe = s; }
+        });
+        if (dist(top, "#75ADED") < 50) bestShoe = shoes[0]; // UNC Override
+        const shoeText = (minShoeDist < 60) ? bestShoe.name : "Birkenstock Arizona Brown";
+
+        // --- WATCH LOGIC ---
+        let eligible = watches.filter(w => !excludedIds.includes(w.id));
+        let scored = eligible.map(w => {
+            let dTop = Math.min(...w.palette.map(p => dist(p, top)));
+            let dBottom = Math.min(...w.palette.map(p => dist(p, bottom)));
+            let score = (mode === 'minimalist') ? (dTop * 0.7) + (dBottom * 0.3) : (dTop * 0.3) + (dBottom * 0.7);
+            return { id: w.id, score: score };
+        }).sort((a, b) => a.score - b.score);
+
+        // PRX FORCE LOGIC (Restored)
+        let finalSelection = scored.slice(0, 3);
+        const hasBlueQuartz = finalSelection.some(m => m.id === 2);
+        if (hasBlueQuartz && !finalSelection.some(m => m.id === 0)) {
+            finalSelection.push({ id: 0, score: -1 });
+            finalSelection.sort((a, b) => a.score - b.score);
+        }
+
+        resetView();
+        document.body.classList.add('has-match');
+        document.getElementById('clearBtn').classList.remove('hidden');
+
+        finalSelection.forEach((m, index) => {
+            const el = document.getElementById(`watch-card-${m.id}`);
+            if(el) {
+                if(index === 0 || (hasBlueQuartz && m.id === 0)) el.classList.add('match-perfect');
+                else el.classList.add('match-suggested');
+            }
+        });
+
+        // --- SUBTLE UI UPDATE ---
+        document.getElementById('match-status').innerHTML = `
+            <span class="text-[#0ABAB5] font-black">${finalSelection.length} WATCHES CALIBRATED</span> 
+            <span class="mx-2 opacity-20">|</span> 
+            <span class="text-white/60 font-bold uppercase">FIT: ${shoeText}</span>
+        `;
+
+        const targetId = (hasBlueQuartz) ? 0 : finalSelection[0].id;
+        document.getElementById(`watch-card-${targetId}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     function exitShutter() {
         const tl = gsap.timeline();
         tl.to(".loader-content", { duration: 0.5, opacity: 0, y: -20, ease: "power2.in" })
@@ -223,67 +297,6 @@
           }, "-=0.5");
     }
 
-    function findMatches() {
-        const top = document.getElementById('topColor').value;
-        const bottom = document.getElementById('bottomColor').value;
-        const mode = document.getElementById('styleMode').value;
-        const excludedIds = [8, 9, 11, 13];
-
-        const hexToRgb = h => h.match(/\w\w/g).map(x => parseInt(x, 16));
-        const getLuminance = hex => {
-            const [r, g, b] = hexToRgb(hex);
-            return (0.299 * r + 0.587 * g + 0.114 * b);
-        };
-
-        const dist = (c1, c2) => {
-            const [r1, g1, b1] = hexToRgb(c1); 
-            const [r2, g2, b2] = hexToRgb(c2);
-            return Math.sqrt(Math.pow((r1-r2)*0.30, 2) + Math.pow((g1-g2)*0.59, 2) + Math.pow((b1-b2)*0.11, 2));
-        };
-
-        let eligible = watches.filter(w => !excludedIds.includes(w.id));
-        let scored = eligible.map(w => {
-            let dTop = Math.min(...w.palette.map(p => dist(p, top)));
-            let dBottom = Math.min(...w.palette.map(p => dist(p, bottom)));
-            let lumTop = getLuminance(top);
-            let watchLum = getLuminance(w.palette[0]);
-            let score = 100;
-
-            if (mode === 'minimalist') {
-                score = (dTop * 0.7) + (dBottom * 0.3);
-            } else {
-                let lumGap = Math.abs(watchLum - lumTop);
-                score = 200 - lumGap + (dBottom * 0.1);
-                if (w.id === 6 || w.id === 1) score -= 40;
-            }
-            return { id: w.id, score: score };
-        }).sort((a, b) => a.score - b.score);
-
-        resetView();
-        document.body.classList.add('has-match');
-        document.getElementById('clearBtn').classList.remove('hidden');
-
-        let finalSelection = scored.slice(0, 3);
-        const hasBlueQuartz = finalSelection.some(m => m.id === 2);
-
-        if (hasBlueQuartz && !finalSelection.some(m => m.id === 0)) {
-            finalSelection.push({ id: 0, score: -1 });
-            finalSelection.sort((a, b) => a.score - b.score);
-        }
-
-        finalSelection.forEach((m, index) => {
-            const el = document.getElementById(`watch-card-${m.id}`);
-            if(el) {
-                if(index === 0 || (hasBlueQuartz && m.id === 0)) el.classList.add('match-perfect');
-                else el.classList.add('match-suggested');
-            }
-        });
-
-        document.getElementById('match-status').innerText = `LOGIC: ${mode.toUpperCase()} MODE [PRX SYNC]`;
-        const targetId = (hasBlueQuartz) ? 0 : finalSelection[0].id;
-        document.getElementById(`watch-card-${targetId}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
     function handleCardClick(e, id) { if(!e.target.closest('button')) openModal(watches.find(w => w.id === id)); }
     function flipCard(e, id) { e.stopPropagation(); document.getElementById(`card-${id}`).classList.toggle('is-flipped'); }
     function setMode(mode) {
@@ -292,7 +305,12 @@
         document.getElementById(mode === 'minimalist' ? 'mode-min' : 'mode-con').classList.add('active');
         if(document.body.classList.contains('has-match')) findMatches();
     }
-    function resetView() { document.body.classList.remove('has-match'); document.getElementById('clearBtn').classList.add('hidden'); document.querySelectorAll('.watch-card-container').forEach(el => el.classList.remove('match-perfect', 'match-suggested')); document.getElementById('match-status').innerText = "Logic: Perceptual Filter"; }
+    function resetView() { 
+        document.body.classList.remove('has-match'); 
+        document.getElementById('clearBtn').classList.add('hidden'); 
+        document.querySelectorAll('.watch-card-container').forEach(el => el.classList.remove('match-perfect', 'match-suggested')); 
+        document.getElementById('match-status').innerHTML = `SYSTEM READY <span class="mx-2 opacity-20"></span>`;
+    }
     function toggleLume() { document.body.classList.toggle('lume-mode'); }
     function handleSearch() { resetView(); const q = document.getElementById('searchInput').value.toLowerCase(); renderWatches(watches.filter(w => w.model.toLowerCase().includes(q) || w.make.toLowerCase().includes(q))); }
     function updateStats(data) { 
@@ -316,12 +334,12 @@
         document.getElementById('m-ref').innerText = w.ref; 
         document.getElementById('m-mov').innerText = w.mov; 
         document.getElementById('m-wr').innerText = w.wr; 
-        document.getElementById('m-size').innerText = w.size; // New line added
+        document.getElementById('m-size').innerText = w.size;
         document.getElementById('m-comp').innerText = w.comp; 
         document.getElementById('m-egg').innerText = w.egg; 
         document.getElementById('m-val').innerText = w.value.toLocaleString() + ' LKR'; 
         document.getElementById('m-bought').innerText = w.bought.toLocaleString() + ' LKR'; 
-        document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[400px] drop-shadow-2xl">`; 
+        document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[400px] drop-shadow-2xl" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'">`; 
         document.getElementById('modal-overlay').style.display = 'flex'; 
         gsap.to("#modal-content", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.2)" }); 
     }
@@ -332,6 +350,7 @@
         document.getElementById('moon-label').innerText = ["NEW MOON", "WAXING CRESCENT", "FIRST QUARTER", "WAXING GIBBOUS", "FULL MOON", "WANING GIBBOUS", "LAST QUARTER", "WANING CRESCENT"][Math.floor((phase/lp) * 8)];
         renderWatches(watches); 
         updateClock();
+        resetView();
 
         let progress = 0;
         const circle = document.getElementById('loading-circle');
