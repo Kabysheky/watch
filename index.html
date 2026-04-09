@@ -47,6 +47,11 @@
         .toggle-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 4px; display: flex; gap: 4px; }
         .toggle-btn { font-size: 8px; font-weight: 900; letter-spacing: 0.1em; padding: 6px 16px; border-radius: 999px; transition: all 0.3s ease; color: rgba(255,255,255,0.4); }
         .toggle-btn.active { background: var(--gold); color: black; }
+
+        /* Wishlist Tab Styles */
+        .tab-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 4px; display: flex; gap: 4px; }
+        .tab-btn { font-size: 9px; font-weight: 900; letter-spacing: 0.1em; padding: 8px 20px; border-radius: 8px; transition: all 0.3s ease; color: rgba(255,255,255,0.4); }
+        .tab-btn.active { background: #0ABAB5; color: black; }
     </style>
 </head>
 <body class="pb-20">
@@ -74,6 +79,12 @@
             <h1 class="lux-font text-4xl tracking-tighter text-[#0ABAB5] uppercase">Kabyshek's </h1>
             <span class="text-[7px] uppercase tracking-[0.8em] text-white/20 font-extrabold">Vault Caliber</span>
         </div>
+
+        <div class="tab-pill">
+            <button id="tab-owned" class="tab-btn active" onclick="switchTab('owned')">COLLECTION</button>
+            <button id="tab-wishlist" class="tab-btn" onclick="switchTab('wishlist')">WISHLIST</button>
+        </div>
+
         <div class="flex items-center gap-4">
             <button class="bg-white/5 border border-white/10 text-[8px] tracking-[2px] py-2 px-6 rounded-lg hover:bg-yellow-500 hover:text-black transition-all" onclick="toggleLume()">LUME MODE</button>
             <input type="text" id="searchInput" placeholder="SEARCH VAULT..." class="bg-white/5 border border-white/10 px-6 py-2 rounded-lg text-[10px] w-48 mono-font outline-none focus:border-yellow-500/50" oninput="handleSearch()">
@@ -104,8 +115,8 @@
                     </div>
                 </div>
             </div>
-            <div class="md:col-span-3 p-8 rounded-[2.5rem] glass-card flex flex-col justify-center text-center">
-                <p class="text-[8px] uppercase opacity-40 font-black tracking-[0.3em] mb-2">Portfolio Valuation</p>
+            <div class="md:col-span-3 p-8 rounded-[2.5rem] glass-card flex flex-col justify-center text-center transition-opacity duration-500" id="val-container">
+                <p class="text-[8px] uppercase opacity-40 font-black tracking-[0.3em] mb-2" id="val-label">Portfolio Valuation</p>
                 <h3 class="text-3xl font-bold mono-font text-yellow-500" id="val-counter">0 LKR</h3>
                 <p class="text-[9px] text-green-400 mt-2 font-bold tracking-widest" id="roi-stat">---</p>
             </div>
@@ -136,9 +147,9 @@
                     <div><h4 class="text-[8px] text-yellow-500/50 font-black uppercase tracking-[0.3em] mb-2">Technical Functions</h4><p id="m-comp" class="text-sm text-white/70 leading-relaxed"></p></div>
                     <div><h4 class="text-[8px] text-yellow-500/50 font-black uppercase tracking-[0.3em] mb-2">Quirks & Details</h4><p id="m-egg" class="text-sm italic text-yellow-500/80 leading-relaxed"></p></div>
                 </div>
-                <div class="pt-8 border-t border-white/5 grid grid-cols-2 gap-4">
+                <div class="pt-8 border-t border-white/5 grid grid-cols-2 gap-4" id="modal-pricing">
                     <div><span class="text-[8px] opacity-30 block mb-1 font-black uppercase tracking-widest">Value</span><p id="m-val" class="text-2xl mono-font font-bold"></p></div>
-                    <div class="text-right"><span class="text-[8px] opacity-30 block mb-1 font-black uppercase tracking-widest">Paid</span><p id="m-bought" class="text-2xl mono-font text-white/40"></p></div>
+                    <div class="text-right" id="m-bought-container"><span class="text-[8px] opacity-30 block mb-1 font-black uppercase tracking-widest">Paid</span><p id="m-bought" class="text-2xl mono-font text-white/40"></p></div>
                 </div>
                 <button onclick="closeModal()" class="mt-10 py-5 rounded-2xl border border-white/10 text-[9px] font-black uppercase tracking-[0.6em] hover:bg-white hover:text-black transition-all">Exit Archive</button>
             </div>
@@ -151,16 +162,211 @@
         { id: 1, make: "Tissot", model: "PRX Quartz (Mint)", ref: "T137.410.11.091.01", size: "40mm", cat: "Integrated Sports", mov: "Quartz (ETA F06.115)", wr: "100m", comp: "End-of-Life Indicator, Date Display", bought: 130000, value: 137000, egg: "The viral mint dial that redefined modern sports watches.", img: "prxm.png", palette: ["#f8fafc", "#94a3b8", "#10b981"] },
         { id: 2, make: "Tissot", model: "PRX Quartz (Blue)", ref: "T137.410.11.041.00", size: "40mm", cat: "Integrated Sports", mov: "Quartz", wr: "100m", comp: "Sunray Blue Dial, Date", bought: 130000, value: 137000, egg: "Iconic integrated bracelet design from 1978.", img: "prxb.png", palette: ["#1e293b", "#e2e8f0", "#475569"] },
         { id: 3, make: "Tissot", model: "Carson Moonphase", ref: "T122.423.11.033.00", size: "40mm", cat: "Dress", mov: "Quartz (Renata 394)", wr: "50m", comp: "Moonphase Complication, Roman Numerals", bought: 155000, value: 165000, egg: "Features a poetic lunar cycle on a silver leaf dial.", img: "carson.png", palette: ["#000000", "#475569", "#fbbf24"] },
-        { id: 4, make: "Tag Heuer", model: "Formula 1 Date", ref: "WAZ1110.BA0875", size: "41mm", cat: "Racing", mov: "Quartz", wr: "200m", comp: "Screw-down Crown, Unidirectional Bezel", bought: 380000, value: 425000, egg: "Professional diving specs combined with racing DNA.", img: "tag.png", palette: ["#1e293b", "#ef4444", "#ffffff"] },
-        { id: 5, make: "Seiko", model: "5 'Specialist'", ref: "SRPD55K1", size: "42.5mm", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m", comp: "Day/Date, Manual Winding, Hacking", bought: 125000, value: 141000, egg: "Robust 4R36 movement visible through the caseback.", img: "76.png", palette: ["#1e1b4b", "#c2410c", "#525252"] },
-        { id: 6, make: "Seiko", model: "5 'Arabic Dial'", ref: "SNKP21J1", size: "42mm", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m", comp: "Eastern Arabic Numerals, Day/Date", bought: 65000, value: 85000, egg: "A rare regional masterpiece with huge cult status.", img: "arabic.png", palette: ["#ffffff", "#4b5563", "#fbbf24"] },
-        { id: 7, make: "G-Shock", model: "CasiOak", ref: "GA-2100-1A1", size: "45.4mm", cat: "Rugged", mov: "Module 5611", wr: "200m", comp: "Carbon Core Guard, World Time, Alarms", bought: 42000, value: 48000, egg: "Modern legend with a slim, octagonal profile.", img: "casioak.png", palette: ["#1e293b", "#334155", "#000000"] },
-        { id: 8, make: "G-Shock", model: "Camo XL", ref: "GA-100MM", size: "51.2mm", cat: "Rugged", mov: "Quartz", wr: "200m", comp: "Speed Indicator, 1/1000 sec Chrono", bought: 48000, value: 52000, egg: "Magnetic resistant structure with XL presence.", img: "gshock.png", palette: ["#454739", "#27272a", "#71717a"] },
-        { id: 9, make: "Casio", model: "Vintage (Black/Gold)", ref: "A168WG-9", size: "36.3mm", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "EL Backlight, Stopwatch", bought: 15000, value: 19500, egg: "The absolute gold standard of 80s retro-futurism.", img: "goldv.png", palette: ["#000000", "#fbbf24", "#3f3f46"] },
+        { id: 4, make: "Tag Heuer", model: "Formula 1 Date", ref: "WAZ1118.BA0875", size: "41mm", cat: "Racing", mov: "Quartz", wr: "200m", comp: "Screw-down Crown, Unidirectional Bezel", bought: 380000, value: 425000, egg: "Professional diving specs combined with racing DNA.", img: "tag.png", palette: ["#1e293b", "#ef4444", "#ffffff"] },
+        { id: 5, make: "Seiko", model: "5 'Specialist'", ref: "SRPD76K1", size: "42.5mm", cat: "Sports/Diver", mov: "Automatic (4R36)", wr: "100m", comp: "Day/Date, Manual Winding, Hacking", bought: 125000, value: 141000, egg: "Robust 4R36 movement visible through the caseback.", img: "76.png", palette: ["#1e1b4b", "#c2410c", "#525252"] },
+        { id: 6, make: "Seiko", model: "5 'Arabic Dial'", ref: "SNK063J5", size: "34mm", cat: "Dress/Cult", mov: "Automatic (7S26)", wr: "30m", comp: "Eastern Arabic Numerals, Day/Date", bought: 65000, value: 85000, egg: "A rare regional masterpiece with huge cult status.", img: "arabic.png", palette: ["#ffffff", "#4b5563", "#fbbf24"] },
+        { id: 7, make: "G-Shock", model: "CasiOak", ref: "GA2100-1A1", size: "45.4mm", cat: "Rugged", mov: "Module 5611", wr: "200m", comp: "Carbon Core Guard, World Time, Alarms", bought: 42000, value: 48000, egg: "Modern legend with a slim, octagonal profile.", img: "casioak.png", palette: ["#1e293b", "#334155", "#000000"] },
+        { id: 8, make: "G-Shock", model: "Camo XL", ref: "GA100CM-8A", size: "51.2mm", cat: "Rugged", mov: "Quartz", wr: "200m", comp: "Speed Indicator, 1/1000 sec Chrono", bought: 48000, value: 52000, egg: "Magnetic resistant structure with XL presence.", img: "gshock.png", palette: ["#454739", "#27272a", "#71717a"] },
+        { id: 9, make: "Casio", model: "Vintage (Black/Gold)", ref: "A168WEGB-1B", size: "36.3mm", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "EL Backlight, Stopwatch", bought: 15000, value: 19500, egg: "The absolute gold standard of 80s retro-futurism.", img: "goldv.png", palette: ["#000000", "#fbbf24", "#3f3f46"] },
         { id: 10, make: "Casio", model: "Vintage (Gunmetal)", ref: "A168WGG-1B", size: "36.3mm", cat: "Digital", mov: "Module 3298", wr: "Water Resistant", comp: "Negative Display, Stealth Case", bought: 14000, value: 18000, egg: "Ion-plated gunmetal for a modern tactical look.", img: "greyv.png", palette: ["#27272a", "#e2e8f0", "#000000"] },
         { id: 11, make: "Casio", model: "Edifice Chrono", ref: "EFV-500L-7AV", size: "48.7mm", cat: "Casual", mov: "Quartz", wr: "100m", comp: "3-Dial Chronograph, Date Display", bought: 28000, value: 35000, egg: "Motorsport-inspired layered dial depth.", img: "edifice.png", palette: ["#7c2d12", "#fef3c7", "#1e293b"] },
-        { id: 12, make: "Fossil", model: "Goodwin Chrono", ref: "FS5412", size: "44mm", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Tachymeter, 60-second Chrono", bought: 22000, value: 28000, egg: "Classic racing aesthetics with a domed crystal lens.", img: "goodwin.png", palette: ["#000000", "#e2e8f0", "#991b1b"] },
+        { id: 12, make: "Fossil", model: "Goodwin Chrono", ref: "FS5415", size: "44mm", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Tachymeter, 60-second Chrono", bought: 22000, value: 28000, egg: "Classic racing aesthetics with a domed crystal lens.", img: "goodwin.png", palette: ["#000000", "#e2e8f0", "#991b1b"] },
         { id: 13, make: "Fossil", model: "Minimalist Slim", ref: "FS5305", size: "44mm", cat: "Casual", mov: "Quartz", wr: "50m", comp: "Time-only, Ultra-thin Profile", bought: 18000, value: 22000, egg: "Maximum simplicity in a low-profile stainless case.", img: "slimline.png", palette: ["#ffffff", "#1e293b", "#d4d4d8"] }
+    ];
+
+const wishlist = [
+        { 
+            id: 101, 
+            make: "Tissot", 
+            model: "PRX Powermatic 80", 
+            ref: "T137.407.11.041.00", 
+            size: "40mm", 
+            cat: "Daily", 
+            mov: "Powermatic 80 (Nivachron)", 
+            wr: "100m", 
+            comp: "Integrated Bracelet, 80-Hour Reserve", 
+            bought: 1, 
+            value: 235000, 
+            egg: "The waffle dial that redefined the integrated sports watch.", 
+            img: "prxp.png", 
+            palette: ["#1e3a8a", "#cbd5e1", "#1e40af"] 
+        },
+        { 
+            id: 102, 
+            make: "Cartier", 
+            model: "Tank Must/Louis", 
+            ref: "Factory Diamond Set", 
+            size: "Large", 
+            cat: "Dress", 
+            mov: "Quartz/Manual", 
+            wr: "30m", 
+            comp: "Brilliant-cut diamonds, Blue Cabochon", 
+            bought: 0, 
+            value: 2800000, 
+            egg: "The quintessence of Art Deco elegance.", 
+            img: "tank.png", 
+            palette: ["#f8fafc", "#e2e8f0", "#94a3b8"] 
+        },
+        { 
+            id: 103, 
+            make: "Rolex", 
+            model: "Datejust 41", 
+            ref: "126334", 
+            size: "41mm", 
+            cat: "Statement", 
+            mov: "3235", 
+            wr: "100m", 
+            comp: "Blue Motif Dial, Jubilee Bracelet, Fluted Bezel", 
+            bought: 0, 
+            value: 4150000, 
+            egg: "Geometric 3D laser-etched dial texture.", 
+            img: "djblue.png", 
+            palette: ["#1e40af", "#cbd5e1", "#94a3b8"] 
+        },
+        { 
+            id: 104, 
+            make: "Rolex", 
+            model: "1908", 
+            ref: "52508", 
+            size: "39mm", 
+            cat: "Holy Grail", 
+            mov: "7140", 
+            wr: "50m", 
+            comp: "Exhibition Caseback, Dualclasp, 18k Gold", 
+            bought: 0, 
+            value: 8250000, 
+            egg: "A rare window into Rolex's high-horology finishing.", 
+            img: "1908.png", 
+            palette: ["#f59e0b", "#fef3c7", "#451a03"] 
+        },
+        { 
+            id: 105, 
+            make: "TAG Heuer", 
+            model: "Carrera Glassbox", 
+            ref: "CBS2212.FC6535", 
+            size: "39mm", 
+            cat: "Chronograph", 
+            mov: "TH20-00", 
+            wr: "100m", 
+            comp: "Domed Sapphire, Tachymeter Scale", 
+            bought: 0, 
+            value: 2450000, 
+            egg: "Seamless vintage-inspired aesthetic with a modern column wheel.", 
+            img: "carrera.png", 
+            palette: ["#1e3a8a", "#000000", "#94a3b8"] 
+        },
+{ 
+        id: 106, 
+        make: "Omega", 
+        model: "Constellation Observatory", 
+        ref: "131.50.39.20.99.002", 
+        size: "39.4mm", 
+        cat: "Heritage", 
+        mov: "8801 Co-Axial Master Chronometer", 
+        wr: "50m", 
+        comp: "Moonshine™ Gold, Meteorite Dial, Observation Medallion", 
+        bought: 0, 
+        value: 14500000, 
+        egg: "The 'Griffes' or claws originally ensured water resistance by pressing the crystal.", 
+        img: "const.png", 
+        palette: ["#fde047", "#fef3c7", "#451a03"] 
+    },
+    { 
+        id: 107, 
+        make: "A. Lange & Söhne", 
+        model: "Datograph Perpetual Tourbillon", 
+        ref: "740.056", 
+        size: "41.5mm", 
+        cat: "Grand Complication", 
+        mov: "L952.2", 
+        wr: "30m", 
+        comp: "Flyback Chronograph, Perpetual Calendar, Tourbillon", 
+        bought: 0, 
+        value: 95000000, 
+        egg: "Features a jumping minute counter for a precise chronograph reading.", 
+        img: "lange.png", 
+        palette: ["#cbd5e1", "#94a3b8", "#1e293b"] 
+    },
+    { 
+        id: 108, 
+        make: "Patek Philippe", 
+        model: "Perpetual Calendar Chronograph", 
+        ref: "5270P-014", 
+        size: "41mm", 
+        cat: "Holy Grail", 
+        mov: "CH 29-535 PS Q", 
+        wr: "30m", 
+        comp: "Green Lacquered Dial, Leap Year Indicator, Moonphase", 
+        bought: 0, 
+        value: 78000000, 
+        egg: "The successor to the 1518, the world's first series-produced perpetual chrono.", 
+        img: "5270j.png", 
+        palette: ["#064e3b", "#ecfdf5", "#065f46"] 
+    },
+    { 
+        id: 109, 
+        make: "Breguet", 
+        model: "Classique Souscription 2025", 
+        ref: "7727 Limited", 
+        size: "41mm", 
+        cat: "High Frequency", 
+        mov: "574DR", 
+        wr: "30m", 
+        comp: "Magnetic Pivot, 10Hz Frequency, 60-Hour Reserve", 
+        bought: 0, 
+        value: 16500000, 
+        egg: "The first watch to ever harness magnetism to improve chronometry.", 
+        img: "sous.png", 
+        palette: ["#f8fafc", "#e2e8f0", "#475569"] 
+    },
+    { 
+        id: 110, 
+        make: "Patek Philippe", 
+        model: "Golden Ellipse", 
+        ref: "5738/51G", 
+        size: "34.5 x 39.5mm", 
+        cat: "Artistic", 
+        mov: "240 Ultra-thin", 
+        wr: "30m", 
+        comp: "Grand Feu Champlevé Enamel, Hand-Engraved 18k Dial", 
+        bought: 0, 
+        value: 22000000, 
+        egg: "Designed using the 'Golden Ratio' for perfect visual harmony.", 
+        img: "ellipse.png", 
+        palette: ["#000000", "#ffffff", "#475569"] 
+    },
+    { 
+        id: 111, 
+        make: "Rolex", 
+        model: "The 'Padellone'", 
+        ref: "8171", 
+        size: "38mm", 
+        cat: "Vintage Grail", 
+        mov: "10.5''' Hunter", 
+        wr: "Vintage", 
+        comp: "Triple Calendar, Moonphase, Leaf Hands", 
+        bought: 0, 
+        value: 120000000, 
+        egg: "Italian for 'Frying Pan' due to its unusually large 38mm vintage size.", 
+        img: "padellone.png", 
+        palette: ["#cbd5e1", "#94a3b8", "#475569"] 
+    },
+    { 
+        id: 112, 
+        make: "Breguet", 
+        model: "Classique 7787", 
+        ref: "7787BR/29/9V6", 
+        size: "39mm", 
+        cat: "Dress", 
+        mov: "591 DRL", 
+        wr: "30m", 
+        comp: "Enamel Dial, Moonphase, Power Reserve Indicator", 
+        bought: 0, 
+        value: 11500000, 
+        egg: "Features the iconic Breguet 'secret signature' etched into the enamel.", 
+        img: "7787.png", 
+        palette: ["#ffffff", "#f59e0b", "#1e293b"] 
+    }
     ];
 
     const shoes = [
@@ -172,10 +378,32 @@
         { name: "Birkenstock Arizona Brown", palette: ["#543b29", "#d2b48c"] }
     ];
 
+    let currentTab = 'owned';
+
+    function switchTab(tab) {
+        currentTab = tab;
+        const isOwned = tab === 'owned';
+        
+        document.getElementById('tab-owned').classList.toggle('active', isOwned);
+        document.getElementById('tab-wishlist').classList.toggle('active', !isOwned);
+        
+        // Update valuation header display
+        const valHeader = document.getElementById('val-container');
+        if(isOwned) {
+            valHeader.style.opacity = "1";
+            document.getElementById('val-label').innerText = "Portfolio Valuation";
+            renderWatches(watches);
+        } else {
+            valHeader.style.opacity = "0.6";
+            document.getElementById('val-label').innerText = "Wishlist Estimate";
+            renderWatches(wishlist);
+        }
+    }
+
     function renderWatches(data) {
         const grid = document.getElementById('watch-grid'); grid.innerHTML = '';
         data.forEach((w) => {
-            const isAuto = w.mov.includes('Automatic');
+            const isAuto = w.mov.includes('Automatic') || w.mov.includes('Spring Drive');
             const card = document.createElement('div');
             card.className = 'watch-card-container'; card.id = `watch-card-${w.id}`;
             card.innerHTML = `
@@ -195,6 +423,7 @@
                                 <span class="text-white/60 font-black">${w.size}</span>
                             </div>
                         </div>
+                        ${w.bought === 0 ? `<div class="absolute top-10 left-1/2 -translate-x-1/2 bg-yellow-500 text-black text-[6px] px-3 py-1 rounded font-black tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-opacity">FUTURE TARGET</div>` : ''}
                     </div>
                     <div class="card-back glass-card p-12 flex flex-col items-center">
                         <p class="text-yellow-500 text-[8px] font-black tracking-[0.5em] mb-12 uppercase relative z-10">Exhibition Caseback</p>
@@ -218,7 +447,7 @@
         const top = document.getElementById('topColor').value;
         const bottom = document.getElementById('bottomColor').value;
         const mode = document.getElementById('styleMode').value;
-        const excludedIds = [8, 9, 11, 13];
+        const excludedIds = [8, 11];
 
         const hexToRgb = h => h.match(/\w\w/g).map(x => parseInt(x, 16));
         const dist = (c1, c2) => {
@@ -227,17 +456,16 @@
             return Math.sqrt(Math.pow((r1-r2)*0.30, 2) + Math.pow((g1-g2)*0.59, 2) + Math.pow((b1-b2)*0.11, 2));
         };
 
-        // --- SHOE LOGIC ---
-        let bestShoe = shoes[5]; // Default Birks
+        let bestShoe = shoes[5]; 
         let minShoeDist = Infinity;
         shoes.forEach(s => {
             let d = Math.min(...s.palette.map(p => dist(p, bottom)));
             if (d < minShoeDist) { minShoeDist = d; bestShoe = s; }
         });
-        if (dist(top, "#75ADED") < 50) bestShoe = shoes[0]; // UNC Override
+        if (dist(top, "#75ADED") < 50) bestShoe = shoes[0]; 
         const shoeText = (minShoeDist < 60) ? bestShoe.name : "Birkenstock Arizona Brown";
 
-        // --- WATCH LOGIC ---
+        // Logic only scans owned collection for the Style Engine
         let eligible = watches.filter(w => !excludedIds.includes(w.id));
         let scored = eligible.map(w => {
             let dTop = Math.min(...w.palette.map(p => dist(p, top)));
@@ -246,7 +474,6 @@
             return { id: w.id, score: score };
         }).sort((a, b) => a.score - b.score);
 
-        // PRX FORCE LOGIC (Restored)
         let finalSelection = scored.slice(0, 3);
         const hasBlueQuartz = finalSelection.some(m => m.id === 2);
         if (hasBlueQuartz && !finalSelection.some(m => m.id === 0)) {
@@ -254,6 +481,7 @@
             finalSelection.sort((a, b) => a.score - b.score);
         }
 
+        switchTab('owned');
         resetView();
         document.body.classList.add('has-match');
         document.getElementById('clearBtn').classList.remove('hidden');
@@ -266,7 +494,6 @@
             }
         });
 
-        // --- SUBTLE UI UPDATE ---
         document.getElementById('match-status').innerHTML = `
             <span class="text-[#0ABAB5] font-black">${finalSelection.length} WATCHES CALIBRATED</span> 
             <span class="mx-2 opacity-20">|</span> 
@@ -297,7 +524,12 @@
           }, "-=0.5");
     }
 
-    function handleCardClick(e, id) { if(!e.target.closest('button')) openModal(watches.find(w => w.id === id)); }
+    function handleCardClick(e, id) { 
+        if(!e.target.closest('button')) {
+            const source = currentTab === 'owned' ? watches : wishlist;
+            openModal(source.find(w => w.id === id)); 
+        }
+    }
     function flipCard(e, id) { e.stopPropagation(); document.getElementById(`card-${id}`).classList.toggle('is-flipped'); }
     function setMode(mode) {
         document.getElementById('styleMode').value = mode;
@@ -312,12 +544,22 @@
         document.getElementById('match-status').innerHTML = `SYSTEM READY <span class="mx-2 opacity-20"></span>`;
     }
     function toggleLume() { document.body.classList.toggle('lume-mode'); }
-    function handleSearch() { resetView(); const q = document.getElementById('searchInput').value.toLowerCase(); renderWatches(watches.filter(w => w.model.toLowerCase().includes(q) || w.make.toLowerCase().includes(q))); }
+    function handleSearch() { 
+        resetView(); 
+        const q = document.getElementById('searchInput').value.toLowerCase(); 
+        const source = currentTab === 'owned' ? watches : wishlist;
+        renderWatches(source.filter(w => w.model.toLowerCase().includes(q) || w.make.toLowerCase().includes(q))); 
+    }
     function updateStats(data) { 
         const mkt = data.reduce((a, w) => a + w.value, 0); 
         const bgt = data.reduce((a, w) => a + w.bought, 0); 
         document.getElementById('val-counter').innerText = mkt.toLocaleString() + ' LKR'; 
-        document.getElementById('roi-stat').innerText = `Portfolio ROI: +${(((mkt-bgt)/bgt)*100).toFixed(1)}%`; 
+        if(bgt > 0) {
+            document.getElementById('roi-stat').style.display = 'block';
+            document.getElementById('roi-stat').innerText = `Portfolio ROI: +${(((mkt-bgt)/bgt)*100).toFixed(1)}%`; 
+        } else {
+            document.getElementById('roi-stat').style.display = 'none';
+        }
     }
     function updateClock() { 
         const now = new Date(); 
@@ -338,7 +580,15 @@
         document.getElementById('m-comp').innerText = w.comp; 
         document.getElementById('m-egg').innerText = w.egg; 
         document.getElementById('m-val').innerText = w.value.toLocaleString() + ' LKR'; 
-        document.getElementById('m-bought').innerText = w.bought.toLocaleString() + ' LKR'; 
+        
+        // Hide "Paid" if it's a wishlist item
+        if(w.bought === 0) {
+            document.getElementById('m-bought-container').style.display = 'none';
+        } else {
+            document.getElementById('m-bought-container').style.display = 'block';
+            document.getElementById('m-bought').innerText = w.bought.toLocaleString() + ' LKR'; 
+        }
+
         document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[400px] drop-shadow-2xl" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'">`; 
         document.getElementById('modal-overlay').style.display = 'flex'; 
         gsap.to("#modal-content", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.2)" }); 
