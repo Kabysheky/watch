@@ -136,6 +136,132 @@
             font-weight: 800;
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
         }
+    
+        /* --- WATCH JOURNAL --- */
+        .journal-badge {
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            color:var(--gold-burnished);
+            border:1px solid rgba(212,175,55,.22);
+            background:rgba(212,175,55,.06);
+            border-radius:999px;
+            padding:4px 8px;
+            font-family:'Fira Code',monospace;
+            font-size:7px;
+            font-weight:700;
+            letter-spacing:.14em;
+            text-transform:uppercase;
+        }
+
+        .journal-preview {
+            margin: 0 0 1.25rem;
+            padding: 1rem 1.1rem;
+            border:1px solid rgba(212,175,55,.18);
+            border-left:2px solid var(--gold-burnished);
+            border-radius:.9rem;
+            background:linear-gradient(135deg,rgba(212,175,55,.07),rgba(124,58,237,.035));
+        }
+        .journal-preview p { color:rgba(248,250,252,.72); line-height:1.7; font-size:.78rem; }
+        .journal-preview button { margin-top:.7rem; }
+
+        #journal-overlay {
+            position:fixed;
+            inset:0;
+            z-index:120;
+            display:none;
+            background:rgba(3,4,7,.96);
+            backdrop-filter:blur(24px);
+            -webkit-backdrop-filter:blur(24px);
+            overflow-y:auto;
+        }
+        .journal-shell { min-height:100vh; }
+        .journal-home-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:1.25rem;
+        }
+        .journal-entry-card {
+            position:relative;
+            padding:1.35rem;
+            border:1px solid rgba(212,175,55,.12);
+            background:rgba(14,18,27,.62);
+            border-radius:1.25rem;
+            transition:transform .35s ease,border-color .35s ease,box-shadow .35s ease;
+        }
+        .journal-entry-card:hover {
+            transform:translateY(-4px);
+            border-color:rgba(212,175,55,.35);
+            box-shadow:0 20px 50px rgba(0,0,0,.4);
+        }
+        .journal-entry-number {
+            font-family:'Fira Code',monospace;
+            font-size:8px;
+            color:var(--gold-burnished);
+            letter-spacing:.2em;
+            font-weight:700;
+        }
+        .journal-story {
+            max-width:900px;
+            margin:0 auto;
+        }
+        .journal-story p {
+            color:rgba(248,250,252,.78);
+            font-size:clamp(.92rem,1.4vw,1.05rem);
+            line-height:2;
+            margin:0 0 1.25rem;
+        }
+        .journal-story strong { color:#fff; font-weight:800; }
+        .journal-story em { color:rgba(248,250,252,.9); }
+        .journal-story blockquote {
+            margin:1.5rem 0;
+            padding:1rem 1.25rem;
+            border-left:2px solid var(--gold-burnished);
+            background:rgba(212,175,55,.05);
+            color:#fff;
+            font-style:italic;
+            border-radius:0 .75rem .75rem 0;
+        }
+        .journal-meta-line {
+            display:flex;
+            flex-wrap:wrap;
+            gap:.5rem;
+            margin:.8rem 0 2rem;
+        }
+        .journal-section {
+            margin:3rem auto 0;
+            max-width:1000px;
+            padding:2rem;
+            border:1px solid rgba(255,255,255,.07);
+            background:rgba(14,18,27,.45);
+            border-radius:1.5rem;
+        }
+        .journal-section h3 {
+            font-family:'Cinzel',serif;
+            color:#fff;
+            font-size:1.35rem;
+            margin-bottom:1rem;
+        }
+        .journal-close {
+            position:sticky;
+            top:1rem;
+            z-index:5;
+            margin-left:auto;
+        }
+        .journal-reader-nav {
+            display:flex;
+            justify-content:space-between;
+            gap:1rem;
+            margin-top:2.5rem;
+            padding-top:1.5rem;
+            border-top:1px solid rgba(255,255,255,.08);
+        }
+
+        @media (max-width: 640px) {
+            .journal-section { padding:1.25rem; }
+            .journal-story p { line-height:1.85; }
+        }
+
     </style>
 </head>
 <body class="pb-20">
@@ -179,6 +305,7 @@
             <button id="tab-owned" class="nav-tab active" onclick="switchTab('owned')">Collection</button>
             <button id="tab-wishlist" class="nav-tab" onclick="switchTab('wishlist')">Wishlist</button>
             <button id="tab-favorites" class="nav-tab" onclick="switchTab('favorites')">Favorites</button>
+            <button id="tab-journal" class="nav-tab" onclick="openJournal()">Journal</button>
         </div>
 
         <div class="flex items-center gap-3 flex-wrap justify-end">
@@ -251,6 +378,16 @@
                 <h2 id="m-model" class="font-cinzel text-2xl font-bold mb-1 text-white leading-tight"></h2>
                 <p id="m-ref" class="price-text text-white/40 text-[9px] tracking-widest mb-4 uppercase"></p>
                 
+                <div id="modal-journal-preview" class="journal-preview hidden">
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <span class="price-text text-[8px] text-[var(--gold-burnished)] font-bold uppercase tracking-[0.22em]">WHY I OWN IT</span>
+                        <span class="journal-badge">✦ JOURNAL ENTRY</span>
+                    </div>
+                    <h3 id="m-journal-title" class="font-cinzel text-base font-bold text-white mb-1"></h3>
+                    <p id="m-journal-excerpt"></p>
+                    <button id="m-journal-read" onclick="openJournalEntryFromModal()" class="text-[8px] font-extrabold uppercase tracking-[0.18em] text-[var(--gold-burnished)] hover:text-white transition-colors">Read full journal entry →</button>
+                </div>
+
                 <div class="grid grid-cols-3 gap-2 mb-4">
                     <div class="p-2.5 bg-black/40 rounded-lg border border-white/5"><span class="price-text text-[7px] text-white/40 block mb-0.5 uppercase font-bold">Movement</span><p id="m-mov" class="text-[9px] font-semibold text-white/90"></p></div>
                     <div class="p-2.5 bg-black/40 rounded-lg border border-white/5"><span class="price-text text-[7px] text-white/40 block mb-0.5 uppercase font-bold">Water Res.</span><p id="m-wr" class="text-[9px] font-semibold text-white/90 price-text"></p></div>
@@ -273,6 +410,72 @@
                     <button onclick="openEditModal()" class="py-2.5 px-4 rounded-lg border border-[var(--gold-burnished)]/40 text-[var(--gold-burnished)] text-[9px] font-extrabold uppercase tracking-widest hover:bg-[var(--gold-burnished)] hover:text-black transition-all">Edit Spec</button>
                     <button id="delete-watch-btn" class="py-2.5 px-4 rounded-lg border border-red-500/40 text-red-400 text-[9px] font-extrabold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Remove</button>
                     <button onclick="closeModal()" class="flex-1 py-2.5 rounded-lg border border-white/10 text-[9px] font-extrabold uppercase tracking-widest hover:bg-white hover:text-black transition-all">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="journal-overlay" onclick="handleJournalOverlayClick(event)">
+        <div class="journal-shell max-w-[1200px] mx-auto px-6 md:px-10 py-6 md:py-10">
+            <div class="flex items-center justify-between gap-4 mb-10">
+                <div>
+                    <p class="price-text text-[8px] text-[var(--gold-burnished)] tracking-[0.35em] uppercase font-bold">PERSONAL ARCHIVE</p>
+                    <h2 class="font-cinzel text-3xl md:text-5xl font-bold text-white mt-1">MY WATCH JOURNAL</h2>
+                    <p class="text-white/40 text-sm mt-2">The watches, the hunts, the memories, and the reasons behind them.</p>
+                </div>
+                <button onclick="closeJournal()" class="journal-close shrink-0 w-10 h-10 rounded-full border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all">✕</button>
+            </div>
+
+            <div id="journal-home-view">
+                <div class="journal-section !mt-0 mb-10">
+                    <p class="price-text text-[8px] text-[var(--gold-burnished)] uppercase tracking-[0.25em] font-bold mb-3">WHY I COLLECT WATCHES</p>
+                    <div id="journal-intro" class="journal-story"></div>
+                </div>
+
+                <div class="flex items-end justify-between gap-4 mb-5">
+                    <div>
+                        <p class="price-text text-[8px] text-white/35 uppercase tracking-[0.25em]">THE COLLECTION</p>
+                        <h3 class="font-cinzel text-2xl font-bold text-white mt-1">Chapters</h3>
+                    </div>
+                    <span id="journal-count" class="price-text text-[8px] text-white/30 uppercase tracking-widest"></span>
+                </div>
+                <div id="journal-entry-grid" class="journal-home-grid"></div>
+
+                <div class="journal-section">
+                    <p class="price-text text-[8px] text-[var(--gold-burnished)] uppercase tracking-[0.25em] font-bold mb-3">WHAT MY COLLECTION MEANS TO ME</p>
+                    <div id="journal-meaning" class="journal-story"></div>
+                </div>
+
+                <div class="journal-section">
+                    <p class="price-text text-[8px] text-[var(--gold-burnished)] uppercase tracking-[0.25em] font-bold mb-3">WHERE I AM NOW</p>
+                    <div id="journal-where-now" class="journal-story"></div>
+                </div>
+
+                <div class="journal-section">
+                    <p class="price-text text-[8px] text-[var(--gold-burnished)] uppercase tracking-[0.25em] font-bold mb-3">THE NEXT CHAPTER</p>
+                    <div id="journal-next" class="journal-story"></div>
+                </div>
+
+                <div class="journal-section mb-10">
+                    <p class="price-text text-[8px] text-[var(--gold-burnished)] uppercase tracking-[0.25em] font-bold mb-3">EPILOGUE</p>
+                    <div id="journal-epilogue" class="journal-story"></div>
+                </div>
+            </div>
+
+            <div id="journal-reader-view" class="hidden">
+                <button onclick="showJournalHome()" class="mb-8 text-[8px] font-extrabold uppercase tracking-[0.2em] text-white/45 hover:text-[var(--gold-burnished)] transition-colors">← Back to Journal</button>
+                <div class="max-w-[900px] mx-auto">
+                    <div class="mb-8">
+                        <p id="journal-reader-chapter" class="price-text text-[8px] text-[var(--gold-burnished)] tracking-[0.3em] uppercase font-bold"></p>
+                        <h2 id="journal-reader-title" class="font-cinzel text-3xl md:text-5xl font-bold text-white mt-2 leading-tight"></h2>
+                        <p id="journal-reader-watch" class="price-text text-[9px] text-white/35 uppercase tracking-widest mt-3"></p>
+                    </div>
+                    <div id="journal-reader-story" class="journal-story"></div>
+                    <div class="journal-reader-nav">
+                        <button id="journal-prev" onclick="navigateJournal(-1)" class="text-left text-[8px] font-extrabold uppercase tracking-widest text-white/45 hover:text-[var(--gold-burnished)] transition-colors"></button>
+                        <button id="journal-next" onclick="navigateJournal(1)" class="text-right text-[8px] font-extrabold uppercase tracking-widest text-white/45 hover:text-[var(--gold-burnished)] transition-colors"></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -321,6 +524,24 @@
 
                 <div><label class="price-text text-[7px] text-white/50 uppercase font-bold block mb-1">Technical Complications</label><input type="text" id="add-comp" required placeholder="e.g. 60-Min Chronograph, Power Reserve Indicator" class="form-input"></div>
                 <div><label class="price-text text-[7px] text-white/50 uppercase font-bold block mb-1">Dial Notes & Finishing</label><input type="text" id="add-egg" required placeholder="e.g. High-contrast Panda dial with matte black sub-dials" class="form-input"></div>
+
+                <div class="pt-2 border-t border-white/10">
+                    <p class="price-text text-[8px] text-[var(--gold-burnished)] uppercase tracking-[0.25em] font-bold mb-3">Personal Journal</p>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="price-text text-[7px] text-white/50 uppercase font-bold block mb-1">Journal Title</label>
+                            <input type="text" id="add-journal-title" placeholder="e.g. The watch that proved them wrong" class="form-input">
+                        </div>
+                        <div>
+                            <label class="price-text text-[7px] text-white/50 uppercase font-bold block mb-1">Journal Excerpt</label>
+                            <textarea id="add-journal-excerpt" rows="2" placeholder="A short introduction shown in the watch detail modal..." class="form-input resize-y"></textarea>
+                        </div>
+                        <div>
+                            <label class="price-text text-[7px] text-white/50 uppercase font-bold block mb-1">Full Journal Story</label>
+                            <textarea id="add-journal-story" rows="8" placeholder="Write the complete story behind this watch. Separate paragraphs with blank lines." class="form-input resize-y"></textarea>
+                        </div>
+                    </div>
+                </div>
 
                 <div>
                     <label class="price-text text-[7px] text-white/50 uppercase font-bold block mb-2">Primary Dial Palette (Hex Colors)</label>
@@ -393,9 +614,66 @@ const defaultWishlist = [
     { id: 117, make: "TAG Heuer", model: "Carrera Glassbox", ref: "CBS2212.FC6535", size: "39mm", cat: "Chronograph", mov: "TH20-00", wr: "100m", comp: "Domed Sapphire, Tachymeter Scale", bought: 0, value: 2450000, egg: "Seamless vintage-inspired aesthetic with a modern column wheel.", img: "carrera.png", palette: ["#1e3a8a", "#000000", "#94a3b8"] }
 ];
 
+;
+    /* --- PERSONAL WATCH JOURNAL DATA --- */
+    const journalEntries = {"A168WGG-1B": {"chapter": 1, "title": "The beginning of my Casio vintage collection", "excerpt": "This wasn't the first watch I ever owned, and it wasn't the beginning of my entire watch collection. It was the beginning of something more specific:", "story": "This wasn't the first watch I ever owned, and it wasn't the beginning of my entire watch collection.\n\nIt was the beginning of something more specific:\n\n**my Casio Vintage collection.**\n\nI had always loved the vintage Casio aesthetic. There was something about those little rectangular digital watches that I couldn't get out of my head.\n\nSo I bought one.\n\nThere wasn't some complicated reason behind it.\n\nI simply loved the watch.\n\nAnd sometimes that's enough.\n\nThis watch represents the beginning of my appreciation for the Casio Vintage line and eventually led me down the rabbit hole of collecting different variations of the same basic idea."}, "A168WEGB-1B": {"chapter": 2, "title": "The Australian work beater", "excerpt": "This one had a very practical purpose. When I was working in Australia, I wanted a watch I could wear to work without constantly worrying about it.", "story": "This one had a very practical purpose.\n\nWhen I was working in Australia, I wanted a watch I could wear to work without constantly worrying about it.\n\nI'm extremely paranoid about scratching my watches.\n\nIf I wear an expensive or sentimental watch somewhere and accidentally knock it against something, I'll think about that scratch for the rest of the day.\n\nSo I needed the opposite.\n\nSomething cheap.\n\nSomething reliable.\n\nSomething I could beat up.\n\nSomething I could scratch without caring.\n\nThe A168 was perfect.\n\nIt became my Australian work beater — the watch I could wear without that constant anxiety.\n\nEventually, I put it on a black alligator strap, which gave it an entirely different personality.\n\nIt went from being a cheap work beater to this strangely cool little retro-dress piece.\n\nAnd that's one of the things I love about watches: sometimes a simple change of strap completely changes how a watch feels."}, "A168WA-3AY": {"chapter": 3, "title": "The final A168", "excerpt": "This is the newest addition to the collection. I bought it because I wanted the silver bracelet and blue display combination.", "story": "This is the newest addition to the collection.\n\nI bought it because I wanted the silver bracelet and blue display combination.\n\nBy itself, it's a simple Casio.\n\nBut in the context of my collection, it completes my little A168 trio.\n\nI now have three A168s, each representing a slightly different reason for owning one.\n\nAnd I've decided something important:\n\n**This is probably where the A168 collecting ends.**\n\nI don't need another one.\n\nI have enough."}, "GA2100-1A1": {"chapter": 4, "title": "The one I wanted for years", "excerpt": "This watch has a special place in my collection. I had wanted the exact triple-black GA-2100 specification ever since it was released.", "story": "This watch has a special place in my collection.\n\nI had wanted the exact triple-black GA-2100 specification ever since it was released.\n\nAt the time, it was going for around AUD 234.\n\nThen I found one for AUD 154 on a random website I had never heard of.\n\nAnd I was terrified.\n\nI was hesitant to the core.\n\nI kept thinking there had to be something wrong with it. Why was it so much cheaper? Was the website legitimate? Was I about to get scammed?\n\nEventually I told myself:\n\n**Why not?**\n\nSo I took the chance.\n\nAnd to my surprise, it was completely legitimate.\n\nThe watch arrived and I was genuinely shocked.\n\nI was so happy that I actually wrote the people who sold it to me a big thank-you letter. I explained how paranoid and hesitant I had been and how relieved I was that everything turned out so well.\n\nThat experience became even better because I continued buying Casios from the same site.\n\nEvery time, it worked out.\n\nEvery watch I chose ended up being more enjoyable than I expected.\n\nSo this GA-2100 isn't just the watch I wanted.\n\nIt's also the watch that taught me that sometimes taking a calculated risk can turn into a great experience."}, "GA100CM-8A": {"chapter": 5, "title": "A watch that simply stayed", "excerpt": "This one is much simpler. I've had it for roughly six or seven years.", "story": "This one is much simpler.\n\nI've had it for roughly six or seven years.\n\nI paid around LKR 20,000 for it at the time.\n\nIt's one of those watches that doesn't need a complicated story.\n\nIt has simply been part of my journey for years.\n\nWhile other watches came and went through different phases of my life, this one remained.\n\nAnd that longevity gives it its own kind of sentimental value."}, "SNK063J5": {"chapter": 6, "title": "The Arabic Seiko", "excerpt": "This is one of the weirdest watches in my collection. And I mean that as a compliment.", "story": "This is one of the weirdest watches in my collection.\n\nAnd I mean that as a compliment.\n\nIt's a small 34mm Seiko with a full Arabic dial.\n\nIt's uncommon.\n\nIt's different.\n\nAnd I love it.\n\nThere wasn't some massive practical reason behind buying it.\n\nMy reasoning was basically:\n\n**Why not?**\n\nIt's rare.\n\nIt's interesting.\n\nIt's tiny.\n\nIt has a full Arabic dial.\n\nAnd it looks completely different from most of the watches people normally collect.\n\nThat was enough.\n\nThis is exactly the kind of watch that reminds me why I like collecting.\n\nIt doesn't have to be the most expensive or prestigious watch.\n\nSometimes something is worth owning simply because it makes you stop and look at it."}, "SRPD76K1": {"chapter": 7, "title": "The Singapore watch", "excerpt": "I wanted a diver-style watch in my collection. Something I could wear every day.", "story": "I wanted a diver-style watch in my collection.\n\nSomething I could wear every day.\n\nSomething sporty, practical and easygoing.\n\nThen I found the Seiko 5 Sports while I was in Singapore and bought it there.\n\nThat gives it another layer of meaning.\n\nIt's not just my daily-wear Seiko.\n\nIt's also a souvenir.\n\nEvery time I wear it, it's connected to that trip and that point in my life.\n\nAnd that's something I value a lot about watches.\n\nYou can travel somewhere and buy a shirt, a keychain or some random souvenir.\n\nBut a watch stays on your wrist for years.\n\nEventually, the watch itself becomes the souvenir."}, "T122.423.11.033.00": {"chapter": 8, "title": "The moonphase", "excerpt": "I badly wanted a moonphase complication. That was the reason.", "story": "I badly wanted a moonphase complication.\n\nThat was the reason.\n\nAt the time, the options I had access to in Australia were either more expensive or simply not accessible to me.\n\nThe Carson gave me what I wanted at a price and level of accessibility that made sense.\n\nSo I bought it.\n\nI also bought it using Afterpay because I wanted to use my points.\n\nThe important thing about this watch is that it wasn't purchased because I needed another dress watch.\n\nIt was purchased because I wanted to experience a particular complication.\n\nI wanted to look down at my wrist and see a moonphase.\n\nNow I do."}, "T137.410.11.091.01": {"chapter": 9, "title": "The Tiffany dream", "excerpt": "This is one of the most important watches in my collection. And the story behind it is slightly ridiculous.", "story": "This is one of the most important watches in my collection.\n\nAnd the story behind it is slightly ridiculous.\n\nI have always been obsessed with Tiffany blue.\n\nThen came the Patek Philippe Nautilus with the Tiffany blue dial.\n\nI loved it.\n\nBut realistically, there was absolutely no way I was going to buy one.\n\nIt was incredibly expensive and limited.\n\nI remember being genuinely heartbroken by the fact that something I loved so much was simply unattainable to me.\n\nThen Tissot released the mint PRX.\n\nIt wasn't exactly the same shade.\n\nIt wasn't a Patek.\n\nIt wasn't a Nautilus.\n\nBut it was close enough to the thing I had fallen in love with.\n\nAnd I knew immediately:\n\n**I had to have it.**\n\nThen the hunt began.\n\nI checked every store.\n\nEvery website.\n\nEvery possible place I could think of.\n\nSold out.\n\nEverywhere.\n\nEvery path was a dead end.\n\nI was almost ready to give up.\n\nThen I found a website that said they could preorder one.\n\nI was out of the country at the time.\n\nI had no idea who these people were.\n\nThey wanted a full deposit.\n\nI was extremely hesitant.\n\nBut they had a physical address.\n\nSo I told myself I'd wait until I returned to Melbourne, visit the store in person and place the order.\n\nThen they warned me that demand was extremely high and they couldn't guarantee they'd still be able to get one for me by the time I returned.\n\nAfter all the second thoughts, I eventually told myself:\n\n**If it's meant to be, it'll be.**\n\nSo I said I'd come to the store when I returned and proceed if they could still get one.\n\nA month later, I found the store.\n\nI went inside.\n\nI placed the preorder.\n\nI paid the full deposit.\n\nThe price had already increased because of the demand.\n\nThen I waited.\n\nFebruary.\n\nMarch.\n\nApril.\n\nMay.\n\nJune.\n\nFour months of waiting.\n\nFour months of wondering whether everything would actually work out.\n\nThen the call came.\n\n**The watch was in.**\n\nI ran to the store.\n\nI opened the box.\n\nI put it on.\n\nAnd I can't properly explain how happy I was.\n\nThis was my first big-boy purchase.\n\nI was so excited that I went straight to university afterwards because I had lectures.\n\nI came home later and kept wearing it because I was simply so happy to finally have it.\n\nThe watch became much more than a mint-coloured PRX.\n\nIt became the watch I chased when the dream Patek was impossible.\n\nIt was my first major Swiss purchase.\n\nAnd it was proof that sometimes the things you think you'll never find eventually find their way to you."}, "T137.410.11.041.00": {"chapter": 10, "title": "The everyday PRX", "excerpt": "I'm a huge sucker for PRXs. I genuinely don't know what it is about the design, but I absolutely love the watch.", "story": "I'm a huge sucker for PRXs.\n\nI genuinely don't know what it is about the design, but I absolutely love the watch.\n\nThe dark blue PRX had always appealed to me.\n\nBut I wanted something I could wear more casually and regularly.\n\nI eventually found a used Quartz PRX advertised for AUD 480.\n\nIt was in mint condition.\n\nI negotiated.\n\nAUD 480 became AUD 390.\n\nAnd I bought it.\n\nIt became one of those watches I simply loved wearing.\n\nI also bought the black Tissot leather strap for it, which changed the personality of the watch completely.\n\nIt became something I could wear with more outfits and in more situations.\n\nIt's not my most complicated watch.\n\nIt's not my most expensive.\n\nBut I love it.\n\nAnd sometimes that's the only specification that matters."}, "T137.407.11.041.00": {"chapter": 11, "title": "The watch that nearly became rose gold", "excerpt": "This is probably the most complicated watch story in the collection. I had always wanted the dark blue PRX Powermatic 80.", "story": "This is probably the most complicated watch story in the collection.\n\nI had always wanted the dark blue PRX Powermatic 80.\n\nBut it was beyond what I could comfortably afford at the time.\n\nSo I didn't even seriously try to save for it.\n\nThen Tissot released the rose-gold PRX Powermatic.\n\nAnd I am a huge sucker for rose gold too.\n\nThe moment I saw it:\n\n**I wanted it.**\n\nOf course, it was sold out everywhere.\n\nSo I contacted the same people who had helped me get my Mint PRX.\n\nThey said they could get one.\n\nI needed it before June 1st because I was leaving the country and wouldn't be returning.\n\nThey said they could meet that deadline.\n\nThey wanted the full payment upfront.\n\nI paid around AUD 1,300 and waited.\n\nThen, while I was working at Melbourne Airport, I saw the rose-gold PRX sitting inside the Tissot duty-free store.\n\nI was excited.\n\nI went in.\n\nI tried it on.\n\nAnd...\n\nI hated it.\n\nI was wearing a full suit that day.\n\nThe watch looked absolutely terrible on my wrist.\n\nI don't know if it was the colour, my skin tone, or simply how the watch looked on me.\n\nBut the feeling was immediate.\n\n**I regretted buying it.**\n\nThe problem was that I had already paid.\n\nSo I waited.\n\nWhat else could I do?\n\nThen, three days before June 1st, the watch sellers contacted me.\n\nThey still hadn't received it.\n\nI was secretly delighted.\n\nFor the first time in my life, I was happy to hear that something I'd ordered was delayed.\n\nThey asked me for four more days.\n\nI couldn't.\n\nMy flights were already booked.\n\nWe waited another couple of days.\n\nStill nothing.\n\nEventually they refunded the entire amount.\n\nIt felt like a miracle.\n\nAnd then I did something that was probably a little crazy.\n\nI sat down and started searching the internet for a used dark blue PRX Powermatic 80.\n\nI contacted every marketplace listing I could find.\n\nEventually I narrowed it down to two.\n\nThe first seller wanted AUD 800.\n\nThe watch had the papers, but the condition was terrible.\n\nScratches.\n\nDents.\n\nEverything.\n\nI negotiated for about an hour and a half and got the price down to somewhere around AUD 580–600.\n\nBut then my friend pulled me aside.\n\nHe knew how much I cared about watches.\n\nHe told me:\n\n> **\"You're mourning a watch breakup right now. Don't make a bad decision as a rebound.\"**\n\nHe was right.\n\nI rejected it.\n\nI went home.\n\nThe second watch was a completely different situation.\n\nIt was being sold through Cash Converters.\n\nNo box.\n\nNo papers.\n\nNo guarantee.\n\nNo warranty.\n\nThe seller didn't even really know how the watch worked.\n\nIt was about an hour and a half away.\n\nI was willing to make the trip anyway.\n\nI went.\n\nI inspected the watch.\n\nAnd it was beautiful.\n\nApart from a visible dent on the back of the case, it was in fantastic condition.\n\nThe watch was legitimate.\n\nThe sweep was smooth as butter.\n\nI worked out that it had probably been made around 2023–24.\n\nI figured I had several years before a service would realistically be necessary.\n\nI negotiated.\n\nAnd bought it for:\n\n**AUD 500.**\n\nNo regrets.\n\nThis became one of my most loved watches.\n\nAnd ironically, I think I ended up with the PRX I actually wanted because the rose-gold version never arrived."}, "WAZ1118.BA0875": {"chapter": 12, "title": "The watch that proved them wrong", "excerpt": "This is probably the most important watch in my collection. Not because it is the most expensive.", "story": "This is probably the most important watch in my collection.\n\nNot because it is the most expensive.\n\nBecause of what it represents.\n\nWhen I was in high school, I was bullied by some rich, spoiled kids.\n\nOne of them wore a TAG Heuer.\n\nHe used it as a way to make me feel small.\n\nHe'd say things like:\n\n*\"Look at my watch.\"*\n\n*\"Can you afford this?\"*\n\n*\"Do you even know what watches are?\"*\n\nI never forgot it.\n\nAt some point I made myself a promise:\n\n**One day, I will buy myself a TAG Heuer with my own money.**\n\nAnd I didn't just casually want one.\n\nI obsessed over this exact watch.\n\nI looked at pictures of it in the classroom.\n\nI saw it on people's wrists.\n\nI saw it on my cousin.\n\nI saw it on Instagram.\n\nI saw it on billboards.\n\nFor years.\n\nAlmost 10–12 years later, I finally got to the point where I could do it.\n\nI saved for roughly six months.\n\nPeople told me I couldn't.\n\nThere were two people whose comments hurt me especially badly.\n\nOne was my best friend's girlfriend.\n\nThe other was a girl I was in a situationship with.\n\nThey both basically said the same thing:\n\nI spent too much money on stupid things, like diecast collectible cars.\n\nThere was no way I could sit down, save properly and buy an expensive watch.\n\nThey didn't think I could do it.\n\nBut I did.\n\nI walked into the TAG Heuer boutique.\n\nI paid the full boutique price.\n\nAUD 2,500.\n\nWith my own money.\n\nAnd bought the Formula 1 I'd wanted for years.\n\nWhen I told people I was saving for a TAG, some of my friends thought I was stupid.\n\nThey thought spending that much money on a wristwatch was ridiculous.\n\nI didn't care.\n\nBecause this watch wasn't about what they thought.\n\nIt was about me.\n\nEventually, my friend's girlfriend admitted:\n\n> **\"Bro, I honestly thought you couldn't do it at all. But I'm impressed now. I'm happy for you.\"**\n\nAnd that felt fucking amazing.\n\nBecause I had proved something.\n\nNot to her.\n\nNot to the girl from the situationship.\n\nNot to the people who laughed.\n\n**To myself.**\n\nEvery time I look at that TAG Heuer, I smile.\n\nIt reminds me of what I was told I couldn't do.\n\nAnd it reminds me that I did it anyway.\n\nThis watch is a physical representation of who I am.\n\nIt tells me what I'm capable of.\n\nAnd I don't think I could ever put a price on that."}, "CWC-BM-G3": {"chapter": 13, "title": "The microbrand hunt", "excerpt": "I wanted a microbrand in my collection. But I didn't want to simply buy some random microbrand because it was affordable.", "story": "I wanted a microbrand in my collection.\n\nBut I didn't want to simply buy some random microbrand because it was affordable.\n\nI researched.\n\nMy search was largely limited to India, Japan and Australia because of accessibility.\n\nAustralia and Japan had some fantastic microbrands, but many were priced around or above good Swiss watches.\n\nIndia became the most realistic option.\n\nThen I discovered brands like BWC, Jaipur Watch Company and DWC.\n\nSome were sold out.\n\nSome were simply too expensive.\n\nThen I discovered **Coromandel Watch Company** after seeing an actor wearing one of their watches on Instagram.\n\nI went down the rabbit hole.\n\nTheir catalogue was tiny.\n\nMaybe six or seven watches.\n\nBut every watch was completely different.\n\nAnd, more importantly, every watch had its own story.\n\nI became fixated on two:\n\nThe Tanjore Edition Royal Purple.\n\nAnd the Blue Mountains V3.\n\nOf course, they were sold out.\n\nI became so obsessed that I emailed the company.\n\nI told them how much of a watch psycho I was and basically begged them to sell me even a non-working piece.\n\nThey said no.\n\nBut they told me to keep checking their socials because something interesting was coming.\n\nSo I did.\n\nEvery damn day.\n\nThen one day they announced a limited batch of the Blue Mountains V3.\n\nI was ready.\n\nI had addresses prepared for my mum, friends, sister — whoever could receive the watch.\n\n11:00 AM.\n\nExactly.\n\nI added it to the cart.\n\nEntered everything.\n\nPlaced the order in about two minutes.\n\nThree minutes later:\n\n**Sold out.**\n\nBut I had secured one.\n\nThen came the waiting.\n\nThree months.\n\nEventually it arrived.\n\nAnd it was brilliant.\n\nSapphire crystal.\n\n416 stainless steel.\n\nMecha-quartz movement.\n\nA limited, unusual design.\n\nAnd all for ₹8,500.\n\nFor that money, I was blown away.\n\nA Fossil could easily cost several times that in Sri Lanka.\n\nBut this little microbrand had given me something far more interesting.\n\nThis is exactly what I wanted from a microbrand:\n\n**character.**"}};
+
+    const journalMeta = {
+        intro: "I don't think I ever started collecting watches because I wanted to own a lot of watches.\n\nI think I started because I kept finding watches that meant something to me.\n\nSometimes it was the design. Sometimes it was a complication. Sometimes it was a memory. Sometimes it was simply because I thought a watch was fucking cool.\n\nAnd sometimes, a watch represented something much bigger.\n\nLooking at my collection now, I realize that almost every watch has a story behind it. Some were carefully researched purchases. Some were lucky finds. Some were souvenirs. Some were watches I had wanted for years. Some were bought because I couldn't stop thinking about them.\n\nAnd a few of them represent moments in my life that I don't ever want to forget.\n\nThis isn't really a record of how much my watches cost.\n\nIt's a record of **why I bought them.**",
+        meaning: "When I look at the collection now, I don't see twelve or thirteen watches.\n\nI see chapters.\n\nI see Australia.\n\nI see university.\n\nI see Melbourne Airport.\n\nI see Singapore.\n\nI see the first time I bought a serious Swiss watch.\n\nI see the first time I took a chance on an unknown website.\n\nI see the Patek I could never afford.\n\nI see the PRX I chased for months.\n\nI see the rose-gold watch that thankfully never arrived.\n\nI see the Cash Converters PRX I drove hours to inspect.\n\nI see the microbrand I waited months for.\n\nI see a birthday I celebrated by buying myself something.\n\nI see a high-school bully who unknowingly planted a ten-year promise in my head.\n\nAnd most importantly, I see evidence of things I once thought were out of reach.",
+        whereNow: "I've reached a point where I don't think I need more watches.\n\nI have enough.\n\nMore than enough, actually.\n\nI have sport watches.\n\nDress watches.\n\nDigital watches.\n\nMilitary-inspired watches.\n\nJapanese watches.\n\nSwiss watches.\n\nA microbrand.\n\nA moonphase.\n\nA diver.\n\nA G-Shock.\n\nA beater.\n\nSentimental pieces.\n\nTravel pieces.\n\nDream pieces.\n\nAnd watches that simply make me smile.\n\nSo I've made a decision.\n\nThe A168WA-3AY is coming into the collection.\n\nAnd after that:\n\n**I'm done.**\n\nNo more PRXs.\n\nNo more A168s.\n\nNo more \"just one more Seiko.\"\n\nNo more buying another watch simply because it's a good deal.\n\nThe collection doesn't need more watches.\n\nIt needs time.",
+        nextChapter: "## Cartier Tank\n\nThere is one watch I now want to save for.\n\nThe Cartier Tank.\n\nNot because I need another watch.\n\nNot because I need something expensive.\n\nAnd not because I need to prove anything to anyone.\n\nI want it because it represents the next stage of my collecting journey.\n\nThe TAG was about proving that I could buy the watch people said I couldn't.\n\nThe PRX was about chasing something I fell in love with.\n\nThe CWC was about discovering something unusual.\n\nThe Casios were about fun.\n\nThe Seikos were about individuality and memories.\n\nThe Tank will be about **intentionality.**\n\nI want to stop accumulating and start saving.\n\nEvery time I'm tempted by another watch, I want to remember:\n\n**I already have enough watches.**\n\nThe question isn't:\n\n*\"What watch can I buy next?\"*\n\nIt's:\n\n**\"How much closer am I to my Tank?\"**\n\nAnd when the day finally comes, I want to walk into that boutique knowing exactly what I'm buying.\n\nI want to try it on.\n\nI want to look at it on my wrist.\n\nAnd I want to know that I didn't simply buy it.\n\n**I waited for it.**",
+        epilogue: "Maybe one day I'll have a much more expensive collection.\n\nMaybe I'll own Rolexes.\n\nMaybe I'll own Omegas.\n\nMaybe I'll own Grand Seikos.\n\nMaybe I'll own watches I haven't even discovered yet.\n\nBut I hope I never forget these watches.\n\nBecause the value of this collection isn't only in the watches themselves.\n\nIt's in the stories.\n\nThe random website that turned out to be legitimate.\n\nThe Mint PRX that took months to arrive.\n\nThe lecture I went to immediately after finally getting it.\n\nThe rose-gold PRX that never came.\n\nThe friend who stopped me from buying a terrible rebound watch.\n\nThe Cash Converters PRX that turned out to be perfect.\n\nThe microbrand I stalked until the limited batch went live.\n\nThe Singapore Seiko.\n\nThe birthday G-Shock.\n\nThe tiny Arabic Seiko.\n\nThe Casio I bought because I simply loved vintage watches.\n\nAnd the TAG Heuer.\n\nThat fucking TAG Heuer.\n\nThe watch I promised myself I'd buy after someone once tried to make me feel small for not having one.\n\nTen years later, I bought it.\n\nWith my own money.\n\nAt a boutique.\n\nAnd every time I look at it, it reminds me:\n\n**I did it.**\n\nThat's what my watch collection really is.\n\nNot a collection of watches.\n\n**A collection of proof.**\n\nProof of things I wanted.\n\nProof of things I chased.\n\nProof of risks I took.\n\nProof of memories I made.\n\nProof that sometimes waiting pays off.\n\nAnd proof that I'm capable of doing things I once thought were impossible.\n\nAnd now, for the first time, I'm going to stop.\n\nI'm going to wear what I have.\n\nI'm going to enjoy what I've built.\n\nAnd I'm going to save for the one that comes next.\n\n**The Cartier Tank.**"
+    };
+
     let watches = JSON.parse(localStorage.getItem('hh_vault_watches')) || defaultWatches;
     let wishlist = JSON.parse(localStorage.getItem('hh_vault_wishlist')) || defaultWishlist;
     let favorites = JSON.parse(localStorage.getItem('hh_vault_favorites')) || [];
+
+    function attachJournalEntries() {
+        [watches, wishlist, favorites].forEach(list => {
+            list.forEach(w => {
+                const entry = journalEntries[w.ref];
+                if (entry) {
+                    w.journal = {
+                        chapter: entry.chapter,
+                        title: entry.title,
+                        excerpt: entry.excerpt,
+                        story: entry.story
+                    };
+                }
+            });
+        });
+
+        const hasA168 = [...watches, ...wishlist].some(w => w.ref === "A168WA-3AY");
+        if (!hasA168 && journalEntries["A168WA-3AY"]) {
+            const a168 = {
+                id: 15,
+                make: "Casio",
+                model: "Vintage (Silver/Blue)",
+                ref: "A168WA-3AY",
+                size: "36.3mm",
+                cat: "Digital",
+                mov: "Module 3298",
+                wr: "Water Resistant",
+                comp: "EL Backlight, Stopwatch",
+                bought: 0,
+                value: 18000,
+                egg: "Silver bracelet and blue display combination.",
+                img: "a168blue.png",
+                palette: ["#cbd5e1", "#1e3a8a", "#ffffff"],
+                journal: {
+                    chapter: journalEntries["A168WA-3AY"].chapter,
+                    title: journalEntries["A168WA-3AY"].title,
+                    excerpt: journalEntries["A168WA-3AY"].excerpt,
+                    story: journalEntries["A168WA-3AY"].story
+                }
+            };
+            wishlist.push(a168);
+        }
+    }
+
+    attachJournalEntries();
 
     function saveVaultState() {
         localStorage.setItem('hh_vault_watches', JSON.stringify(watches));
@@ -435,6 +713,9 @@ const defaultWishlist = [
         document.getElementById('add-bought').value = w.bought;
         document.getElementById('add-comp').value = w.comp;
         document.getElementById('add-egg').value = w.egg;
+        document.getElementById('add-journal-title').value = w.journal?.title || '';
+        document.getElementById('add-journal-excerpt').value = w.journal?.excerpt || '';
+        document.getElementById('add-journal-story').value = w.journal?.story || '';
         document.getElementById('add-img-url').value = w.img.startsWith('data:') ? '' : w.img;
         
         if (w.palette && w.palette.length >= 3) {
@@ -470,6 +751,11 @@ const defaultWishlist = [
                 value: parseFloat(document.getElementById('add-val').value) || 0,
                 comp: document.getElementById('add-comp').value,
                 egg: document.getElementById('add-egg').value,
+                journal: document.getElementById('add-journal-story').value.trim() ? {
+                    title: document.getElementById('add-journal-title').value.trim() || 'My story with this watch',
+                    excerpt: document.getElementById('add-journal-excerpt').value.trim() || document.getElementById('add-journal-story').value.trim().slice(0, 300),
+                    story: document.getElementById('add-journal-story').value.trim()
+                } : null,
                 palette: [
                     document.getElementById('add-c1').value,
                     document.getElementById('add-c2').value,
@@ -530,6 +816,7 @@ const defaultWishlist = [
         document.getElementById('tab-owned').classList.toggle('active', tab === 'owned');
         document.getElementById('tab-wishlist').classList.toggle('active', tab === 'wishlist');
         document.getElementById('tab-favorites').classList.toggle('active', tab === 'favorites');
+        document.getElementById('tab-journal').classList.remove('active');
         
         const valHeader = document.getElementById('val-container');
         if(tab === 'owned') {
@@ -615,7 +902,7 @@ const defaultWishlist = [
 
             card.innerHTML = `
                 <div class="flex justify-between items-center mb-3">
-                    <span class="bg-black/60 border border-white/10 text-[8px] px-3 py-1 rounded-full font-bold uppercase tracking-widest text-[var(--gold-burnished)] price-text">${w.cat}</span>
+                    <div class="flex items-center gap-2"><span class="bg-black/60 border border-white/10 text-[8px] px-3 py-1 rounded-full font-bold uppercase tracking-widest text-[var(--gold-burnished)] price-text">${w.cat}</span>${w.journal ? '<span class="journal-badge">✦ JOURNAL</span>' : ''} </div>
                     <div class="flex items-center gap-2">
                         <button onclick="toggleFavorite(event, ${w.id})" class="text-xs transition-transform active:scale-125">
                             ${isFav ? '❤️' : '🤍'}
@@ -963,6 +1250,19 @@ const defaultWishlist = [
         document.getElementById('m-comp').innerText = w.comp;
         document.getElementById('m-egg').innerText = w.egg;
         document.getElementById('m-val').innerText = w.value.toLocaleString() + ' LKR';
+
+        const journalPreview = document.getElementById('modal-journal-preview');
+        if (w.journal && w.journal.story) {
+            journalPreview.classList.remove('hidden');
+            document.getElementById('m-journal-title').innerText = w.journal.title || 'My story with this watch';
+            document.getElementById('m-journal-excerpt').innerText = w.journal.excerpt || '';
+            document.getElementById('m-journal-read').style.display = 'inline-block';
+        } else {
+            journalPreview.classList.add('hidden');
+            document.getElementById('m-journal-title').innerText = '';
+            document.getElementById('m-journal-excerpt').innerText = '';
+            document.getElementById('m-journal-read').style.display = 'none';
+        }
         
         if(w.bought === 0) {
             document.getElementById('m-bought-container').style.display = 'none';
@@ -979,8 +1279,178 @@ const defaultWishlist = [
         document.getElementById('delete-watch-btn').onclick = deleteCurrentWatch;
         document.getElementById('modal-img-frame').innerHTML = `<img src="${w.img}" class="max-h-[320px] object-contain drop-shadow-2xl" onerror="this.src='https://via.placeholder.com/300?text=${w.make}'">`;
         document.getElementById('modal-overlay').style.display = 'flex';
+        document.getElementById('modal-overlay').style.alignItems = 'center';
+        document.getElementById('modal-overlay').style.justifyContent = 'center';
         gsap.to("#modal-content", { opacity: 1, scale: 1, duration: 0.25, ease: "power2.out" });
     }
+
+
+    /* --- JOURNAL ENGINE --- */
+    let activeJournalWatch = null;
+
+    function markdownToJournalHtml(markdown) {
+        if (!markdown) return '';
+        const escapeHtml = (value) => value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        const lines = escapeHtml(markdown).split(/\r?\n/);
+        const blocks = [];
+        let paragraph = [];
+
+        const flushParagraph = () => {
+            if (!paragraph.length) return;
+            let text = paragraph.join(' ');
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            blocks.push(`<p>${text}</p>`);
+            paragraph = [];
+        };
+
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) {
+                flushParagraph();
+                return;
+            }
+            if (trimmed.startsWith('> ')) {
+                flushParagraph();
+                let quote = trimmed.slice(2)
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+                blocks.push(`<blockquote>${quote}</blockquote>`);
+                return;
+            }
+            paragraph.push(trimmed);
+        });
+
+        flushParagraph();
+        return blocks.join('');
+    }
+
+    function journalWatches() {
+        return [...watches, ...wishlist]
+            .filter(w => w.journal && w.journal.story)
+            .sort((a, b) => (a.journal.chapter || 999) - (b.journal.chapter || 999));
+    }
+
+    function renderJournalHome() {
+        document.getElementById('journal-home-view').classList.remove('hidden');
+        document.getElementById('journal-reader-view').classList.add('hidden');
+
+        document.getElementById('journal-intro').innerHTML = markdownToJournalHtml(journalMeta.intro);
+        document.getElementById('journal-meaning').innerHTML = markdownToJournalHtml(journalMeta.meaning);
+        document.getElementById('journal-where-now').innerHTML = markdownToJournalHtml(journalMeta.whereNow);
+        document.getElementById('journal-next').innerHTML = markdownToJournalHtml(journalMeta.nextChapter);
+        document.getElementById('journal-epilogue').innerHTML = markdownToJournalHtml(journalMeta.epilogue);
+
+        const entries = journalWatches();
+        document.getElementById('journal-count').innerText = `${entries.length} RECORDED CHAPTERS`;
+        const grid = document.getElementById('journal-entry-grid');
+        grid.innerHTML = '';
+
+        entries.forEach((w, index) => {
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'journal-entry-card text-left';
+            card.onclick = () => openJournalEntry(w, index);
+            card.innerHTML = `
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <span class="journal-entry-number">CHAPTER ${String(w.journal.chapter).padStart(2, '0')}</span>
+                    <span class="journal-badge">✦ READ</span>
+                </div>
+                <p class="price-text text-[7px] text-white/35 uppercase tracking-[0.22em] mb-1">${w.make} · ${w.model}</p>
+                <h3 class="font-cinzel text-lg font-bold text-white leading-tight mb-2">${w.journal.title}</h3>
+                <p class="text-xs text-white/45 leading-relaxed">${w.journal.excerpt || ''}</p>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function openJournal() {
+        closeModal();
+        closeAddModal();
+        document.getElementById('journal-overlay').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        renderJournalHome();
+        window.scrollTo({top: 0, behavior: 'instant'});
+    }
+
+    function closeJournal() {
+        document.getElementById('journal-overlay').style.display = 'none';
+        document.body.style.overflow = '';
+        activeJournalWatch = null;
+    }
+
+    function handleJournalOverlayClick(event) {
+        if (event.target.id === 'journal-overlay') closeJournal();
+    }
+
+    function showJournalHome() {
+        activeJournalWatch = null;
+        renderJournalHome();
+        document.getElementById('journal-overlay').scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function openJournalEntry(w, knownIndex = -1) {
+        if (!w || !w.journal) return;
+        const entries = journalWatches();
+        const index = knownIndex >= 0 ? knownIndex : entries.findIndex(x => x.id === w.id);
+        activeJournalWatch = { watch: w, index };
+
+        document.getElementById('journal-home-view').classList.add('hidden');
+        document.getElementById('journal-reader-view').classList.remove('hidden');
+
+        document.getElementById('journal-reader-chapter').innerText =
+            `CHAPTER ${String(w.journal.chapter).padStart(2, '0')} · ${w.make.toUpperCase()}`;
+        document.getElementById('journal-reader-title').innerText = w.journal.title;
+        document.getElementById('journal-reader-watch').innerText = `${w.model} · ${w.ref}`;
+        document.getElementById('journal-reader-story').innerHTML = markdownToJournalHtml(w.journal.story);
+
+        const prev = entries[index - 1];
+        const next = entries[index + 1];
+
+        const prevBtn = document.getElementById('journal-prev');
+        const nextBtn = document.getElementById('journal-next');
+
+        prevBtn.innerHTML = prev ? `← CHAPTER ${String(prev.journal.chapter).padStart(2, '0')}<br><span class="normal-case font-normal text-white/25">${prev.journal.title}</span>` : '';
+        nextBtn.innerHTML = next ? `CHAPTER ${String(next.journal.chapter).padStart(2, '0')} →<br><span class="normal-case font-normal text-white/25">${next.journal.title}</span>` : '';
+        prevBtn.style.visibility = prev ? 'visible' : 'hidden';
+        nextBtn.style.visibility = next ? 'visible' : 'hidden';
+
+        document.getElementById('journal-overlay').scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function navigateJournal(direction) {
+        if (!activeJournalWatch) return;
+        const entries = journalWatches();
+        const nextIndex = activeJournalWatch.index + direction;
+        if (nextIndex < 0 || nextIndex >= entries.length) return;
+        openJournalEntry(entries[nextIndex], nextIndex);
+    }
+
+    function openJournalEntryFromModal() {
+        if (!activeWatchInModal || !activeWatchInModal.journal) return;
+        const target = activeWatchInModal;
+        closeModal();
+        openJournalEntry(target);
+        document.getElementById('journal-overlay').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const journalOpen = document.getElementById('journal-overlay').style.display === 'block';
+            if (journalOpen) closeJournal();
+            else if (document.getElementById('modal-overlay').style.display !== 'none') closeModal();
+        }
+        if (document.getElementById('journal-overlay').style.display === 'block' && activeJournalWatch) {
+            if (e.key === 'ArrowLeft') navigateJournal(-1);
+            if (e.key === 'ArrowRight') navigateJournal(1);
+        }
+    });
+
 
     function runLoaderAnimation() {
         const cageTween = gsap.to("#loader-cage", { rotation: 360, transformOrigin: "100px 100px", duration: 8, repeat: -1, ease: "none" });
